@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch(base + "/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + key },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + key, "x-api-key": key, "User-Agent": "dt-sl-paper-generator/1.0" },
       body: JSON.stringify({
         model: useModel,
         max_tokens: 6000,
@@ -38,9 +38,11 @@ export default async function handler(req, res) {
         ]
       })
     });
-    const data = await r.json().catch(() => ({}));
+    const raw = await r.text();
+    let data = {};
+    try { data = JSON.parse(raw); } catch (e) {}
     if (!r.ok) {
-      const msg = (data.error && (data.error.message || data.error)) || `API error ${r.status}`;
+      const msg = (data.error && (data.error.message || data.error)) || `API error ${r.status}: ${raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200)}`;
       return res.status(r.status === 429 || r.status === 402 ? 429 : 502).json({ error: String(msg).slice(0, 300) });
     }
     const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
