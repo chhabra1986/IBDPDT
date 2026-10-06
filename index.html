@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>DT SL Paper Generator</title>
+<title>DT Paper Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -164,15 +164,31 @@ table.dt th{background:var(--accent-soft)}
 .pdfsheet .q{break-inside:auto}
 footer.foot{margin-top:18px;color:var(--muted);font-size:12.5px}
 @media (prefers-reduced-motion:no-preference){.sheet{transition:opacity .2s}}
+.qtext{margin:0 0 8px}
+figure.fig{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:6px;display:table;max-width:100%;overflow-x:auto;color:var(--ink);background:var(--sheet)}
+figure.fig svg.dg{display:block;max-width:100%;height:auto}
+figure.fig figcaption{font-family:var(--f-ui);font-size:12.5px;color:var(--muted);margin-top:6px}
+figure.fig .dt{margin:0}
+.chart{min-width:min(100%,520px)}
+.bar{display:grid;grid-template-columns:minmax(110px,34%) 1fr 4.6em;gap:8px;align-items:center;margin:3px 0;font-family:var(--f-ui);font-size:13px}
+.bt{display:block;height:13px;background:var(--bg);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bf{display:block;height:100%;background:var(--accent)}
+.bv{font-family:var(--f-mono);font-size:12px;text-align:right}
+.drawbox{grid-column:2/4;height:300px;border:1.5px dashed var(--line);border-radius:6px;margin-top:6px}
+.ctx{margin:0 0 10px}
+.hlb{font-family:var(--f-mono);font-size:10.5px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:2px}
+.chip.off{opacity:.45;cursor:not-allowed}
+.pdfsheet figure.fig{border-color:#d5dbe6;background:#fff;color:#151c2b}
+.pdfsheet .bf{background:#0f766e}
 </style>
 
 </head><body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <div class="eyebrow">Design Technology · SL · First assessment 2027</div>
-      <h1>DT SL Paper Generator</h1>
-      <p>Build a fresh practice Paper 1, Paper 2 or a topic test from the 13 SL topics, then check yourself against the markscheme.</p>
+      <div class="eyebrow">Design Technology · SL &amp; HL · First assessment 2027</div>
+      <h1>DT Paper Generator</h1>
+      <p>Build a fresh practice Paper 1, Paper 2 or a topic test at SL or HL, then check yourself against the markscheme.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Paper type">
       <button role="tab" id="tab-p1" aria-selected="true" data-mode="p1">Paper 1</button>
@@ -183,15 +199,16 @@ footer.foot{margin-top:18px;color:var(--muted);font-size:12.5px}
 
   <div class="grid">
     <aside class="rail" aria-label="Paper settings">
+      <div><span class="lbl">Level</span><div class="seg" role="group" aria-label="Level"><button data-lvl="sl" aria-pressed="true">SL</button><button data-lvl="hl" aria-pressed="false">HL</button></div></div>
       <div id="cfg-p1" class="stack">
         <h2>Paper 1 settings</h2>
         <div class="field"><label for="p1n">Number of multiple-choice questions</label>
-          <div class="row"><input type="number" id="p1n" min="10" max="40" value="30"><span class="hint">1 mark each</span></div></div>
-        <p class="hint">Specimen format: 30 questions, 1 hour, calculator required. Questions are spread across all 13 SL topics, weighted by teaching hours.</p>
+          <div class="row"><input type="number" id="p1n" min="10" max="60" value="30"><span class="hint">1 mark each</span></div></div>
+        <p class="hint" id="p1hint"></p>
       </div>
       <div id="cfg-p2" class="stack" hidden>
         <h2>Paper 2 format</h2>
-        <p class="hint">Matches the SL specimen paper: 1 hour 30 minutes, 50 marks, answer all questions. Each question is set in a design context with parts worth [1]–[4] marks, and questions are drawn from themes A, B and C.</p>
+        <p class="hint" id="p2hint"></p>
       </div>
       <div id="cfg-topic" class="stack" hidden>
         <h2>Topic-wise settings</h2>
@@ -212,7 +229,7 @@ footer.foot{margin-top:18px;color:var(--muted);font-size:12.5px}
           <p class="hint">Share a code so the whole class gets the same paper.</p></div>
       </div>
 
-      <p class="note">Practice material written to the SL syllabus content in the DT guide (first assessment 2027). Paper layout is a practice format, not an official IB paper. Markschemes list acceptable points; use your teacher's judgement for answers worded differently.</p>
+      <p class="note">Practice material written to the SL and HL syllabus content in the DT guide (first assessment 2027). Paper layout is a practice format, not an official IB paper. Markschemes list acceptable points; use your teacher's judgement for answers worded differently.</p>
     </aside>
 
     <main class="sheetwrap">
@@ -670,10 +687,408 @@ const EQ = [
 {t:"C3.1",m:9,q:"Discuss the importance of product analysis and evaluation in the development of a new product.",ind:["Identifies strengths and weaknesses of existing products","SWOT based on function, performance, usability, features, materials","testing and reverse engineering give objective data","stakeholder input (users, manufacturers, engineers)","comparing competitors reveals opportunities","constructive discontent drives improvement","limitations: time, cost, may encourage copying rather than innovation","conclusion"]}
 ];
 
+/* ---------- diagram helpers (inline SVG, theme-aware via currentColor) ---------- */
+const SV=(w,h,body)=>`<svg class="dg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" xmlns="http://www.w3.org/2000/svg" font-family="Archivo, Arial, sans-serif" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+const TX=(x,y,t,a,ex)=>`<text x="${x}" y="${y}" text-anchor="${a||"middle"}" fill="currentColor" stroke="none"${ex?" "+ex:""}>${t}</text>`;
+function ARW(x1,y1,x2,y2,w){const a=Math.atan2(y2-y1,x2-x1),s=w||8,p=(d)=>[x2-s*Math.cos(a+d),y2-s*Math.sin(a+d)];const[l,r]=[p(.45),p(-.45)];return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><polygon points="${x2},${y2} ${l[0].toFixed(1)},${l[1].toFixed(1)} ${r[0].toFixed(1)},${r[1].toFixed(1)}" fill="currentColor"/>`}
+// figure wrapper; alt = text description used for AI marking
+function FIG(cap,svg,alt){return`<figure class="fig" data-alt="${String(alt||cap).replace(/"/g,"&quot;")}">${svg}<figcaption>${cap}</figcaption></figure>`}
+// horizontal bar chart from divs
+function HBAR(title,rows,unit,max){max=max||Math.max(...rows.map(r=>r[1]));return`<figure class="fig chart" data-alt="${title}: ${rows.map(r=>r[0]+" "+r[1]+(unit||"")).join("; ")}"><figcaption style="margin:0 0 6px">${title}</figcaption>${rows.map(r=>`<div class="bar"><span class="bl">${r[0]}</span><span class="bt"><span class="bf" style="width:${Math.max(2,r[1]/max*100).toFixed(1)}%"></span></span><span class="bv">${r[1]}${unit||""}</span></div>`).join("")}</figure>`}
+
+// gear train: list of {t:teeth, n:"A", same:true (on same shaft as previous)}
+function GEARS(list,cap,note){
+  let x=20,body="",prev=null,cx=[],H=0;const R=t=>Math.max(20,t*1.5);
+  list.forEach((g,i)=>{const r=R(g.t);if(i===0)x+=r;else if(g.same)x=prev.x;else x=prev.x+prev.r+r+2;g.x=x;g.r=r;H=Math.max(H,r);prev=g});
+  const W=prev.x+prev.r+20,cy=H+18;
+  list.forEach(g=>{const teeth=Math.min(48,Math.max(8,Math.round(g.t/1.5)));let d="";for(let k=0;k<teeth;k++){const a=k/teeth*2*Math.PI,a2=(k+.5)/teeth*2*Math.PI;d+=`${k?"L":"M"}${(g.x+g.r*Math.cos(a)).toFixed(1)},${(cy+g.r*Math.sin(a)).toFixed(1)} L${(g.x+(g.r-4)*Math.cos(a2)).toFixed(1)},${(cy+(g.r-4)*Math.sin(a2)).toFixed(1)} `}
+    body+=`<path d="${d}Z" ${g.same?'stroke-dasharray="4 3" stroke-width="1.2"':""}/><circle cx="${g.x}" cy="${cy}" r="3" fill="currentColor"/>`;
+    body+=TX(g.x,cy-7,g.n,"middle",'font-size="13" font-weight="700"');
+    });
+  body+=TX(10,2*H+44,list.map(g=>`${g.n}: ${g.t} teeth${g.same?" (dashed, same shaft as "+list[list.indexOf(g)-1].n+")":""}`).join("  ·  "),"start",'font-size="12"');
+  if(list[0].drv)body+=TX(list[0].x,cy-list[0].r-6,"driver","middle",'font-size="11"');
+  return FIG(cap,SV(Math.max(W+30,list.length*120),2*H+54,body),cap+": "+list.map(g=>`${g.n} ${g.t} teeth${g.same?" (same shaft as previous gear)":""}`).join(", ")+(note?". "+note:""));
+}
+// lever: L = load pos, E = effort pos, F = fulcrum pos (0..1 along beam); up = arrays of which forces point up
+function LEVER(o,cap){
+  const X=p=>40+p*400,y=60;let b=`<line x1="40" y1="${y}" x2="440" y2="${y}" stroke-width="6"/>`;
+  b+=`<polygon points="${X(o.F)},${y+3} ${X(o.F)-14},${y+28} ${X(o.F)+14},${y+28}" fill="none"/>`+TX(X(o.F),y+44,"Fulcrum","middle",'font-size="12"');
+  const f=(p,lab,up)=>up?ARW(X(p),y+48,X(p),y+6)+TX(X(p),y+64,lab,"middle",'font-size="12"'):ARW(X(p),y-46,X(p),y-6)+TX(X(p),y-52,lab,"middle",'font-size="12"');
+  b+=f(o.L,o.Lt||"Load",o.Lup)+f(o.E,o.Et||"Effort",o.Eup);
+  (o.dims||[]).forEach((d,i)=>{const yy=y+82+i*18;b+=`<line x1="${X(d[0])}" y1="${yy}" x2="${X(d[1])}" y2="${yy}" stroke-width="1"/><line x1="${X(d[0])}" y1="${yy-5}" x2="${X(d[0])}" y2="${yy+5}" stroke-width="1"/><line x1="${X(d[1])}" y1="${yy-5}" x2="${X(d[1])}" y2="${yy+5}" stroke-width="1"/>`+TX((X(d[0])+X(d[1]))/2,yy-4,d[2],"middle",'font-size="12"')});
+  return FIG(cap,SV(480,y+86+(o.dims||[]).length*18,b),o.alt||cap);
+}
+function PULLEY(d1,d2,l1,l2,cap,alt){
+  const r1=d1/2,r2=d2/2,x1=30+r1,x2=x1+r1+120+r2,cy=Math.max(r1,r2)+14;
+  const b=`<circle cx="${x1}" cy="${cy}" r="${r1}"/><circle cx="${x2}" cy="${cy}" r="${r2}"/><circle cx="${x1}" cy="${cy}" r="3" fill="currentColor"/><circle cx="${x2}" cy="${cy}" r="3" fill="currentColor"/><line x1="${x1}" y1="${cy-r1}" x2="${x2}" y2="${cy-r2}"/><line x1="${x1}" y1="${cy+r1}" x2="${x2}" y2="${cy+r2}"/>`+TX(Math.max(x1,60),cy+Math.max(r1,r2)+28,l1,"middle",'font-size="12"')+TX(x2,cy+Math.max(r1,r2)+28,l2,"middle",'font-size="12"');
+  return FIG(cap,SV(x2+r2+30,2*cy+24,b),alt||cap);
+}
+// beam types
+function BEAM(kind,cap,load){
+  let b=`<rect x="60" y="50" width="300" height="14" />`;const tri=x=>`<polygon points="${x},64 ${x-12},86 ${x+12},86"/>`;const wall=x=>`<line x1="${x}" y1="20" x2="${x}" y2="100" stroke-width="3"/>`+[0,1,2,3,4,5,6].map(i=>`<line x1="${x}" y1="${26+i*12}" x2="${x+(x<200?-10:10)}" y2="${34+i*12}" stroke-width="1"/>`).join("");
+  if(kind==="ss")b+=tri(70)+tri(350);if(kind==="cant")b+=wall(60);if(kind==="fixed")b+=wall(60)+wall(360);if(kind==="cont")b+=tri(70)+tri(210)+tri(350);
+  if(load)b+=ARW(load.x,12,load.x,48)+TX(load.x+8,22,load.t,"start",'font-size="12"');
+  return FIG(cap,SV(420,110,b),cap);
+}
+function SSGRAPH(cap,o){
+  o=o||{};const X=v=>60+v*300,Y=v=>220-v*190;let b=`<line x1="60" y1="220" x2="380" y2="220"/><line x1="60" y1="220" x2="60" y2="20"/>`+TX(220,252,"Strain","middle")+TX(18,120,"Stress","middle",'transform="rotate(-90 18 120)"');
+  b+=`<path d="M${X(0)},${Y(0)} L${X(.22)},${Y(.62)} Q${X(.26)},${Y(.66)} ${X(.3)},${Y(.64)} Q${X(.55)},${Y(.95)} ${X(.75)},${Y(.92)} Q${X(.85)},${Y(.85)} ${X(.9)},${Y(.7)}" stroke-width="2.2"/>`;
+  const pts=o.pts||[["A",.22,.62],["B",.3,.64],["C",.68,.94],["D",.9,.7]];pts.forEach(p=>{b+=`<circle cx="${X(p[1])}" cy="${Y(p[2])}" r="4" fill="currentColor"/>`+TX(X(p[1])+(p[0]==="D"?10:-4),Y(p[2])-10,p[0],"middle",'font-weight="700"')});
+  (o.ticks||[]).forEach(t=>{b+=t[0]==="x"?`<line x1="${X(t[1])}" y1="220" x2="${X(t[1])}" y2="226" />`+TX(X(t[1]),240,t[2],"middle",'font-size="11"'):`<line x1="54" y1="${Y(t[1])}" x2="60" y2="${Y(t[1])}" />`+TX(50,Y(t[1])+4,t[2],"end",'font-size="11"')+`<line x1="60" y1="${Y(t[1])}" x2="${X(.22*t[1]/.62)}" y2="${Y(t[1])}" stroke-dasharray="3 4" stroke-width="1"/>`});
+  return FIG(cap,SV(400,262,b),o.alt||cap);
+}
+function BLOCKS(items,cap,fb,alt){
+  const w=Math.min(150,Math.floor(620/items.length)-20);let b="";items.forEach((t,i)=>{const x=10+i*(w+26);b+=`<rect x="${x}" y="22" width="${w}" height="46" rx="6"/>`+t.split("|").map((s,k,arr)=>TX(x+w/2,46+(k-(arr.length-1)/2)*15,s,"middle",'font-size="12"')).join("");if(i<items.length-1)b+=ARW(x+w+2,45,x+w+24,45,7)});
+  const W=10+items.length*(w+26);if(fb){const xe=10+(items.length-1)*(w+26)+w/2,xs=10+w/2;b+=`<path d="M${xe},68 V96 H${xs} V72"/>`+ARW(xs,80,xs,70,7)+TX((xs+xe)/2,90,fb,"middle",'font-size="12"')}
+  return FIG(cap,SV(W,fb?104:80,b),alt||cap+": "+items.map(s=>s.replace(/\|/g," ")).join(" → ")+(fb?" (feedback: "+fb+")":""));
+}
+function CAM(cap,alt){
+  const b=`<path d="M200,190 C150,190 140,140 160,110 C175,85 190,40 200,40 C210,40 225,85 240,110 C260,140 250,190 200,190 Z"/><circle cx="200" cy="150" r="4" fill="currentColor"/>`+`<rect x="192" y="-2" width="16" height="36" transform="translate(0,4)"/>`+`<line x1="200" y1="40" x2="200" y2="40"/><rect x="186" y="0" width="28" height="8" />`+TX(260,30,"Follower","start",'font-size="12"')+`<line x1="215" y1="20" x2="255" y2="26" stroke-width="1"/>`+TX(270,150,"Pear-shaped cam","start",'font-size="12"')+TX(200,172,"shaft","middle",'font-size="11"')+`<path d="M120,160 A70,70 0 0 1 130,100" />`+ARW(126,112,131,99,7)+TX(110,128,"rotation","end",'font-size="11"');
+  return FIG(cap,SV(400,200,b),alt||cap);
+}
+function RES(x,y,lab,vert){return vert?`<rect x="${x-8}" y="${y}" width="16" height="40" fill="none"/>`+TX(x+14,y+24,lab,"start",'font-size="12"'):`<rect x="${x}" y="${y-8}" width="40" height="16" fill="none"/>`+TX(x+20,y-14,lab,"middle",'font-size="12"')}
+// series / parallel resistor circuits
+function CIRC(kind,vals,V,cap){
+  let b="";const cell=(x,y)=>`<line x1="${x}" y1="${y-14}" x2="${x}" y2="${y+14}" stroke-width="2"/><line x1="${x+8}" y1="${y-7}" x2="${x+8}" y2="${y+7}" stroke-width="4"/>`+TX(x+4,y+32,V,"middle",'font-size="12"');
+  if(kind==="series"){b+=cell(40,120)+`<line x1="40" y1="106" x2="40" y2="40"/><line x1="48" y1="113" x2="48" y2="113"/><line x1="48" y1="120" x2="48" y2="120"/>`;
+    const n=vals.length,step=260/n;b+=`<line x1="40" y1="40" x2="70" y2="40"/>`;vals.forEach((v,i)=>{const x=70+i*step;b+=RES(x,40,v)+`<line x1="${x+40}" y1="40" x2="${x+step}" y2="40"/>`});
+    b+=`<line x1="330" y1="40" x2="330" y2="120"/><line x1="330" y1="120" x2="48" y2="120"/>`;
+    return FIG(cap,SV(380,170,b),`${cap}: ${V} supply with ${vals.join(", ")} in series`)}
+  b+=cell(40,140)+`<line x1="40" y1="126" x2="40" y2="40"/><line x1="40" y1="40" x2="140" y2="40"/><line x1="48" y1="140" x2="140" y2="140"/>`;
+  vals.forEach((v,i)=>{const x=140+i*90;b+=`<line x1="${x}" y1="40" x2="${x+90}" y2="40"/><line x1="${x+90}" y1="140" x2="${x}" y2="140"/>`;b+=`<line x1="${x+60}" y1="40" x2="${x+60}" y2="70"/>`+RES(x+60,70,v,true)+`<line x1="${x+60}" y1="110" x2="${x+60}" y2="140"/>`});
+  return FIG(cap,SV(150+vals.length*90,190,b),`${cap}: ${V} supply with ${vals.join(" and ")} in parallel`);
+}
+function T2(rows,cap){return`<figure class="fig">${TBL(rows)}<figcaption>${cap}</figcaption></figure>`}
+function TBL(rows){return`<table class="dt"><tr>${rows[0].map(c=>`<th>${c}</th>`).join("")}</tr>${rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table>`}
+function FEA_BRACKET(){
+  const b=`<defs><linearGradient id="feaG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d7301f"/><stop offset=".25" stop-color="#fdae61"/><stop offset=".55" stop-color="#a6d96a"/><stop offset="1" stop-color="#2c7bb6"/></linearGradient><linearGradient id="feaV" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#d7301f"/><stop offset=".4" stop-color="#fdae61"/><stop offset="1" stop-color="#2c7bb6"/></linearGradient></defs>`+
+  `<rect x="40" y="20" width="22" height="150" fill="url(#feaV)" stroke="currentColor"/><path d="M62,140 H330 V164 H62 Z" fill="url(#feaG)" stroke="currentColor"/><line x1="30" y1="10" x2="30" y2="190" stroke-width="4"/>`+[0,1,2,3,4,5,6,7].map(i=>`<line x1="30" y1="${18+i*22}" x2="20" y2="${28+i*22}" stroke-width="1"/>`).join("")+ARW(320,96,320,138)+TX(326,108,"200 N","start",'font-size="12"')+TX(75,128,"max 18 MPa","start",'font-size="12"')+`<line x1="74" y1="132" x2="66" y2="140" stroke-width="1"/>`+TX(200,186,"Arm","middle",'font-size="12"')+TX(70,30,"Wall plate","start",'font-size="12"')+
+  `<rect x="360" y="30" width="14" height="120" fill="url(#feaV)" stroke="currentColor" stroke-width="1" transform="rotate(180 367 90)"/>`+TX(380,40,"High","start",'font-size="11"')+TX(380,152,"Low","start",'font-size="11"')+TX(367,22,"Stress","middle",'font-size="11"');
+  return FIG("FEA stress plot of the shelf bracket (simplified)",SV(420,200,b),"FEA plot of an L-shaped bracket: wall plate and horizontal arm, 200 N at the tip; highest stress (red, 18 MPa) at the inside corner where the arm meets the wall plate, lowest (blue) at the tip");
+}
+
+/* MCQ bank — DT HL-only topics (first assessment 2027). Original questions. */
+const MCQ_HL=[
+/* A3.2 Introduction to structural systems */
+{t:"A3.2",r:"3.2.2",q:"Which product is the best example of a shell structure?",o:["An aluminium drinks can","A bicycle frame","A solid rubber doorstop","An electricity pylon"],a:0,why:"A shell structure gets its strength from a thin outer skin that encloses a space, like a can. Frames are made of members (bicycle, pylon); a doorstop is a solid structure."},
+{t:"A3.2",r:"3.2.3",q:"A diving board fixed at one end and free at the other is an example of a:",o:["cantilever beam","simply supported beam","continuously supported beam","column"],a:0,why:"A cantilever is supported at one end only."},
+{t:"A3.2",r:"3.2.4",q:"Which force acts on a screwdriver shaft as it turns a stiff screw?",o:["Torsion","Shear","Compression","Tension"],a:0,why:"Torsion is a twisting force."},
+{t:"A3.2",r:"3.2.4",q:"Which is an example of a dynamic force?",o:["Gusts of wind acting on a road sign","The weight of a roof resting on its walls","A book resting on a shelf","The weight of a parked car on a bridge"],a:0,why:"Dynamic forces change in size or direction over time; the others are static loads."},
+{t:"A3.2",r:"3.2.5",q:"On a stress–strain graph, the yield point is where the material:",o:["begins to deform plastically and will not return to its original shape","breaks into two pieces","reaches its maximum stress","has zero strain"],a:0,why:"Beyond the yield point deformation is permanent (plastic). Ultimate strength is the maximum stress; fracture is where it breaks."},
+{t:"A3.2",r:"3.2.6",q:"A material with a high Young's modulus will:",o:["deform very little under a given stress","stretch a lot under a small stress","always be brittle","have a low density"],a:0,why:"Young's modulus measures stiffness: high E means little strain for a given stress."},
+{t:"A3.2",r:"3.2.6",q:"Which material has the lowest Young's modulus?",o:["Natural rubber","Mild steel","Glass","Aluminium alloy"],a:0,why:"Rubber is very flexible (E of about 0.01–0.1 GPa) compared with metals and glass."},
+{t:"A3.2",r:"3.2.7",q:"A structure is in equilibrium when:",o:["all the forces and turning moments acting on it are balanced","it is made from a single material","it is loaded only in compression","its safety factor is exactly 1"],a:0,why:"Equilibrium: resultant force and resultant moment are zero, so the structure does not move."},
+{t:"A3.2",r:"3.2.8",q:"Plywood is stronger and more stable than a single sheet of wood of the same thickness because of:",o:["lamination with alternating grain directions","the use of struts","its shell shape","heat treatment"],a:0,why:"Laminating veneers with the grain at 90° to each other spreads strength in both directions and reduces warping."},
+{t:"A3.2",r:"3.2.9",q:"A safety factor of 1 means that a structure:",o:["would fail at exactly its intended maximum load","can carry twice its intended load","will never fail","has been over-engineered"],a:0,why:"SF = ultimate load ÷ allowable load; SF = 1 leaves no margin for overloading."},
+/* A3.3 Introduction to mechanical systems */
+{t:"A3.3",r:"3.3.1",q:"The motion of a playground swing is:",o:["oscillating","rotary","linear","reciprocating"],a:0,why:"Oscillating motion swings back and forth along an arc."},
+{t:"A3.3",r:"3.3.1",q:"The motion of the needle in a sewing machine is:",o:["reciprocating","oscillating","rotary","linear"],a:0,why:"Reciprocating motion is up-and-down or back-and-forth in a straight line."},
+{t:"A3.3",r:"3.3.3",q:"Mechanical advantage is calculated as:",o:["load ÷ effort","effort ÷ load","distance moved by effort ÷ distance moved by load","output power ÷ input power"],a:0,why:"MA = load/effort. Distance moved by effort ÷ distance moved by load is the velocity ratio."},
+{t:"A3.3",r:"3.3.6",q:"Which gear system changes the axis of rotation through 90° and gives a large speed reduction in one stage?",o:["Worm and wheel","Spur gears","Rack and pinion","Idler gear"],a:0,why:"A worm drive turns the motion through 90° and a single-start worm moves the wheel one tooth per turn."},
+{t:"A3.3",r:"3.3.6",q:"What is the purpose of an idler gear between a driver and a driven gear?",o:["To make the driven gear turn in the same direction as the driver","To increase the gear ratio","To reduce friction","To convert rotary motion into linear motion"],a:0,why:"An idler reverses direction (so driver and driven turn the same way) without changing the overall ratio."},
+{t:"A3.3",r:"3.3.6",q:"A ratchet and pawl is used in a winch to:",o:["allow rotation in one direction only","convert rotary to reciprocating motion","increase output speed","change motion through 90°"],a:0,why:"The pawl locks the ratchet against reverse rotation, so a load cannot unwind."},
+{t:"A3.3",r:"3.3.8",q:"Which cam shape produces a sudden drop of the follower once per revolution and can only rotate in one direction?",o:["Snail (drop) cam","Circular (eccentric) cam","Pear cam","Oval cam"],a:0,why:"The snail cam rises gradually then drops suddenly, so it must turn one way."},
+{t:"A3.3",r:"3.3.9",q:"A wheelbarrow is a:",o:["second-class lever","first-class lever","third-class lever","bell crank linkage"],a:0,why:"The fulcrum (wheel) is at one end, the load in the middle and the effort at the handles."},
+{t:"A3.3",r:"3.3.9",q:"Which product uses a third-class lever?",o:["Tweezers","Scissors","Bottle opener","Seesaw"],a:0,why:"In a third-class lever the effort is between the fulcrum and the load, as in tweezers."},
+{t:"A3.3",r:"3.3.10",q:"A bell crank linkage is used to:",o:["change the direction of motion through 90°","reverse the direction of motion along the same line","keep two parts moving parallel","increase rotational speed"],a:0,why:"A bell crank pivots at its corner and turns a push or pull through 90°, as in bicycle brakes."},
+/* A3.4 Introduction to electronic systems */
+{t:"A3.4",r:"3.4.3",q:"Which is a feature of a digital system?",o:["It uses discrete values such as 0 and 1","It uses a continuously varying signal","It can only measure temperature","It cannot be programmed"],a:0,why:"Digital systems represent information as discrete on/off (binary) values."},
+{t:"A3.4",r:"3.4.4",q:"A resistor is labelled 4.7 kΩ. Its resistance is:",o:["4700 Ω","470 Ω","47 000 Ω","0.0047 Ω"],a:0,why:"k = 10³, so 4.7 × 1000 = 4700 Ω."},
+{t:"A3.4",r:"3.4.4",q:"220 nF is the same as:",o:["0.22 µF","22 µF","2.2 µF","220 µF"],a:0,why:"1 µF = 1000 nF, so 220 nF = 0.22 µF."},
+{t:"A3.4",r:"3.4.6",q:"What is the main function of a diode?",o:["To allow current to flow in one direction only","To store electrical charge","To amplify a small voltage","To vary resistance with light"],a:0,why:"A diode conducts in one direction and blocks reverse current."},
+{t:"A3.4",r:"3.4.6",q:"A relay allows:",o:["a low-current circuit to switch a separate high-current circuit","current to flow in one direction only","a signal to be amplified","light levels to be measured"],a:0,why:"A relay is an electrically operated switch: a small current in the coil closes contacts in another circuit."},
+{t:"A3.4",r:"3.4.7",q:"As the light falling on a light-dependent resistor (LDR) increases, its resistance:",o:["decreases","increases","stays the same","becomes zero"],a:0,why:"An LDR's resistance falls as light intensity rises."},
+{t:"A3.4",r:"3.4.11",q:"Which is an example of a closed-loop system?",o:["A thermostat-controlled heater that switches off when the room is warm enough","A hairdryer that runs until it is switched off","A doorbell","A torch"],a:0,why:"A closed-loop system uses feedback from a sensor to adjust its output."},
+{t:"A3.4",r:"3.4.12",q:"An operational amplifier (op-amp) is best described as:",o:["a high-gain voltage amplifier with two inputs and one output","a switch that is operated by a magnet","a component that stores charge","a programmable integrated circuit"],a:0,why:"An op-amp amplifies the difference between its two inputs, e.g. to boost a weak sensor signal."},
+{t:"A3.4",r:"3.4.13",q:"An embedded system is:",o:["a computer system built into a product to carry out a dedicated function","a general-purpose desktop computer","any circuit that uses a battery","a type of sensor"],a:0,why:"Embedded systems (e.g. in a washing machine) run dedicated control software inside a product."},
+{t:"A3.4",r:"3.4.9",q:"Which statement about a microcontroller (PIC) is correct?",o:["It is a programmable integrated circuit that can be reprogrammed for different tasks","It can only be used as an amplifier","It is an output device","It replaces the need for any sensors"],a:0,why:"A PIC contains a processor, memory and input/output pins and runs software loaded into it."},
+/* A4.1 Manufacturing techniques */
+{t:"A4.1",r:"4.1.1",q:"Turning a component on a lathe is an example of which category of manufacturing technique?",o:["Subtractive (wasting)","Additive","Forming","Joining"],a:0,why:"Turning removes material from a rotating workpiece."},
+{t:"A4.1",r:"4.1.2",q:"Laminated object manufacture (LOM) builds a part by:",o:["bonding and cutting thin sheets of material layer by layer","extruding molten filament","curing resin with UV light","sintering powder with a laser"],a:0,why:"LOM stacks sheets (paper, plastic or metal foil), bonds them and cuts each layer's outline."},
+{t:"A4.1",r:"4.1.4",q:"Which additive technique fuses metal powder with a laser to make low-volume aerospace parts?",o:["Powder bed fusion","Fused deposition modelling","Laminated object manufacture","Vacuum forming"],a:0,why:"Powder bed fusion (e.g. selective laser melting) fuses layers of metal powder."},
+{t:"A4.1",r:"4.1.5",q:"4D printing differs from 3D printing because the printed object:",o:["changes shape or properties over time in response to a stimulus","is printed with four nozzles","is always made from metal","is produced in four hours or less"],a:0,why:"4D-printed parts (often shape-memory polymers) change when exposed to heat, water, light or pH."},
+{t:"A4.1",r:"4.1.6",q:"What is the main benefit of 5-axis (\"5D\") additive manufacturing?",o:["Layers can follow curved surfaces, giving stronger and more complex parts with fewer supports","It prints five parts at once","It uses five different materials","It removes the need for CAD"],a:0,why:"Rotating the head and bed lets material be deposited along curved paths, improving strength in complex parts."},
+{t:"A4.1",r:"4.1.7",q:"Which process is best for cutting a slot and flat faces in an aluminium block?",o:["Milling","Turning","Blow moulding","Rotational moulding"],a:0,why:"Milling uses a rotating multi-point cutter to make flat faces, slots and pockets."},
+{t:"A4.1",r:"4.1.8",q:"Which process is most suitable for mass-producing hollow plastic drinks bottles?",o:["Blow moulding","Rotational moulding","Vacuum forming","Turning"],a:0,why:"Blow moulding inflates a heated parison inside a mould — fast and ideal for thin-walled bottles."},
+{t:"A4.1",r:"4.1.8",q:"A large hollow polyethylene kayak with an even wall thickness is most likely made by:",o:["rotational moulding","injection moulding","extrusion","press forming"],a:0,why:"Rotational moulding suits large, hollow, seamless parts with low tooling cost."},
+{t:"A4.1",r:"4.1.8",q:"Plastic window frames and pipes with a constant cross-section are made by:",o:["extrusion","vacuum forming","casting","welding"],a:0,why:"Extrusion forces material through a shaped die to give long lengths of constant profile."},
+{t:"A4.1",r:"4.1.8",q:"Which process is best suited to producing thin plastic food trays from a heated sheet?",o:["Vacuum forming","Injection moulding","Rotational moulding","Die casting"],a:0,why:"Vacuum forming pulls a heated thermoplastic sheet over a former."},
+{t:"A4.1",r:"4.1.8",q:"Why is injection moulding uneconomic for producing 200 units of a product?",o:["The cost of the steel mould is very high","The cycle time is very slow","It can only use metals","It cannot produce complex shapes"],a:0,why:"Tooling costs are high, so injection moulding only becomes economic at high volumes."},
+{t:"A4.1",r:"4.1.9",q:"Which joining method permanently fuses two pieces of steel by melting them?",o:["Welding","Adhering","Fastening with bolts","Stitching"],a:0,why:"Welding melts the parent metals (often with a filler) so they fuse."},
+{t:"A4.1",r:"4.1.10",q:"Anodizing is a finishing process used on:",o:["aluminium, to thicken its protective oxide layer","steel, to coat it in zinc","wood, to seal the grain","polymers, to make them conductive"],a:0,why:"Anodizing grows a hard oxide layer on aluminium that can also be dyed."},
+{t:"A4.1",r:"4.1.10",q:"Galvanizing protects steel by:",o:["coating it with zinc","coating it with oil","polishing it","anodizing it"],a:0,why:"Zinc acts as a barrier and corrodes in preference to the steel (sacrificial protection)."},
+{t:"A4.1",r:"4.1.3",q:"A designer 3D prints a quick, rough model to test the size of a handle. This is an example of:",o:["rapid prototyping of an initial base model","production of a refined final product","mass customization","computer integrated manufacturing"],a:0,why:"Rapid prototyping here is used to test and validate an early idea, not to make the end product."},
+/* B3.2 Structural systems application and selection */
+{t:"B3.2",r:"3.2.2",q:"A steel bar is under a tensile stress of 120 MPa and a tensile strain of 0.0006. Its Young's modulus is:",o:["200 GPa","72 GPa","0.2 GPa","20 GPa"],a:0,why:"E = σ/ε = 120 MPa ÷ 0.0006 = 200 000 MPa = 200 GPa."},
+{t:"B3.2",r:"3.2.2",q:"A rod 200 mm long stretches by 0.4 mm under load. The strain is:",o:["0.002","0.02","0.5","500"],a:0,why:"Strain = extension ÷ original length = 0.4 ÷ 200 = 0.002 (no units)."},
+{t:"B3.2",r:"3.2.2",q:"A force of 10 kN acts on a cross-sectional area of 50 mm². The stress is:",o:["200 MPa","0.2 MPa","500 MPa","5 MPa"],a:0,why:"Stress = F/A = 10 000 N ÷ 50 mm² = 200 N/mm² = 200 MPa."},
+{t:"B3.2",r:"3.2.5",q:"A shelf bracket fails at 12 kN and is designed to carry 4 kN. Its safety factor is:",o:["3","8","0.33","48"],a:0,why:"SF = ultimate load ÷ allowable load = 12 ÷ 4 = 3."},
+{t:"B3.2",r:"3.2.5",q:"A climbing hold fails at 9 kN. The designer uses a safety factor of 4. The maximum allowable load is:",o:["2.25 kN","36 kN","13 kN","5 kN"],a:0,why:"Allowable load = ultimate load ÷ SF = 9 ÷ 4 = 2.25 kN."},
+{t:"B3.2",r:"3.2.3",q:"In a finite element analysis (FEA) colour plot, the red areas usually show:",o:["regions of highest stress, where failure is most likely","the heaviest parts","areas that need painting","regions with no load"],a:0,why:"FEA maps stress: red (highest) shows where cracks or yielding are likely to start."},
+{t:"B3.2",r:"3.2.4",q:"A simply supported beam carries a single 600 N load at its centre. Ignoring the beam's weight, the reaction at each support is:",o:["300 N","600 N","1200 N","150 N"],a:0,why:"By symmetry the two reactions share the load equally: 600 ÷ 2 = 300 N each."},
+{t:"B3.2",r:"3.2.3",q:"A plastic chair leg cracks where its cross-section suddenly narrows. The most likely cause is:",o:["a stress concentration caused by the change in shape","the chair being too light","the leg being in pure tension","a safety factor that is too high"],a:0,why:"Sharp changes in section concentrate stress; designers add fillets (rounded corners) to prevent this."},
+/* B3.3 Mechanical systems application and selection */
+{t:"B3.3",r:"3.3.4",q:"A driver gear with 15 teeth turns a driven gear with 45 teeth. If the driver turns at 900 rpm, the driven gear turns at:",o:["300 rpm","2700 rpm","600 rpm","45 rpm"],a:0,why:"Gear ratio = 45 ÷ 15 = 3:1, so output speed = 900 ÷ 3 = 300 rpm."},
+{t:"B3.3",r:"3.3.4",q:"In a compound gear train, gear A (20 teeth) drives gear B (60 teeth). Gear C (15 teeth) is on the same shaft as B and drives gear D (45 teeth). A turns at 1800 rpm. What is the speed of D?",o:["200 rpm","600 rpm","5400 rpm","900 rpm"],a:0,why:"Overall ratio = (60/20) × (45/15) = 3 × 3 = 9, so 1800 ÷ 9 = 200 rpm."},
+{t:"B3.3",r:"3.3.2",q:"A driver pulley of diameter 50 mm drives a pulley of diameter 150 mm. The velocity ratio is:",o:["3","0.33","100","7500"],a:0,why:"VR = driven diameter ÷ driver diameter = 150 ÷ 50 = 3."},
+{t:"B3.3",r:"3.3.6",q:"An effort of 100 N is applied 1.5 m from the fulcrum of a first-class lever. The load is 0.3 m from the fulcrum. What load can be lifted?",o:["500 N","20 N","150 N","45 N"],a:0,why:"Moments: Load × 0.3 = 100 × 1.5, so Load = 150 ÷ 0.3 = 500 N."},
+{t:"B3.3",r:"3.3.3",q:"A pulley system has a mechanical advantage of 4 and a velocity ratio of 5. Its efficiency is:",o:["80%","125%","20%","9%"],a:0,why:"Efficiency = MA ÷ VR × 100 = 4 ÷ 5 × 100 = 80%."},
+{t:"B3.3",r:"3.3.3",q:"A belt drive receives 200 W from a motor and delivers 170 W to a fan. Its efficiency is:",o:["85%","118%","30%","15%"],a:0,why:"Efficiency = output ÷ input × 100 = 170 ÷ 200 × 100 = 85%."},
+{t:"B3.3",r:"3.3.4",q:"A single-start worm drives a 40-tooth worm wheel. The worm turns at 1200 rpm. The wheel turns at:",o:["30 rpm","48 000 rpm","1160 rpm","300 rpm"],a:0,why:"A single-start worm advances the wheel one tooth per turn: ratio 40:1, so 1200 ÷ 40 = 30 rpm."},
+{t:"B3.3",r:"3.3.4",q:"To increase the output speed of a gear system, the designer should:",o:["use a large driver gear and a small driven gear","use a small driver gear and a large driven gear","add an idler gear","use gears with equal numbers of teeth"],a:0,why:"A large driver turning a small driven gear 'gears up' the speed (with less torque)."},
+{t:"B3.3",r:"3.3.5",q:"A cam rotates at 30 rpm. How many times per minute does the follower rise and fall if the cam is pear-shaped?",o:["30","60","15","120"],a:0,why:"A pear cam has one rise and one fall per revolution, so 30 cycles per minute."},
+/* B3.4 Electronic systems application and selection */
+{t:"B3.4",r:"3.4.3",q:"A 9 V battery is connected across a 450 Ω resistor. The current is:",o:["20 mA","4050 mA","50 mA","2 mA"],a:0,why:"I = V/R = 9 ÷ 450 = 0.02 A = 20 mA."},
+{t:"B3.4",r:"3.4.3",q:"A 12 V lamp draws a current of 0.5 A. Its power is:",o:["6 W","24 W","11.5 W","0.04 W"],a:0,why:"P = VI = 12 × 0.5 = 6 W."},
+{t:"B3.4",r:"3.4.4",q:"Resistors of 220 Ω and 330 Ω are connected in series. The total resistance is:",o:["550 Ω","132 Ω","110 Ω","72 600 Ω"],a:0,why:"In series, R = R₁ + R₂ = 220 + 330 = 550 Ω."},
+{t:"B3.4",r:"3.4.4",q:"Resistors of 6 kΩ and 3 kΩ are connected in parallel. The total resistance is:",o:["2 kΩ","9 kΩ","4.5 kΩ","18 kΩ"],a:0,why:"1/R = 1/6 + 1/3 = 1/2, so R = 2 kΩ. Parallel resistance is always less than the smallest resistor."},
+{t:"B3.4",r:"3.4.4",q:"Capacitors of 10 µF and 22 µF are connected in parallel. The total capacitance is:",o:["32 µF","6.9 µF","12 µF","220 µF"],a:0,why:"Capacitances in parallel add: 10 + 22 = 32 µF (the opposite of resistors)."},
+{t:"B3.4",r:"3.4.2",q:"To measure the current through a lamp with a multimeter, the meter must be connected:",o:["in series with the lamp, on a current range","in parallel with the lamp, on a voltage range","across the battery, on a resistance range","in parallel with the lamp, on a current range"],a:0,why:"Current must flow through the meter, so it is placed in series."},
+{t:"B3.4",r:"3.4.9",q:"The output of a two-input AND gate is 1 when:",o:["both inputs are 1","either input is 1","both inputs are 0","the inputs are different"],a:0,why:"AND: output 1 only if A = 1 and B = 1."},
+{t:"B3.4",r:"3.4.7",q:"Which sensor is most suitable for a parking aid that measures distance to a wall?",o:["Ultrasonic sensor","Hygrometer","Photoresistor","Barometric pressure sensor"],a:0,why:"Ultrasonic sensors time an echo to measure distance or proximity."},
+{t:"B3.4",r:"3.4.10",q:"Which output device would a designer use to turn a small robot arm to an exact angle?",o:["Servo motor","Buzzer","LCD","Relay"],a:0,why:"A servo motor moves to and holds a set angular position."},
+{t:"B3.4",r:"3.4.11",q:"Why is Bluetooth often chosen over Wi-Fi for a fitness tracker that connects to a phone?",o:["It uses less power over short distances","It has a much longer range","It is faster for streaming video","It needs a mobile network contract"],a:0,why:"Bluetooth (especially Low Energy) is designed for short-range, low-power links."},
+{t:"B3.4",r:"3.4.5",q:"In a flow diagram for a programmable system, a decision (e.g. 'Is temperature > 30 °C?') is shown by a:",o:["diamond","rectangle","parallelogram","rounded rectangle (terminator)"],a:0,why:"Diamonds are decisions with yes/no exits; rectangles are processes; parallelograms are inputs/outputs."},
+/* B4.1 Production systems */
+{t:"B4.1",r:"4.1.3",q:"A furniture maker produces a single bespoke dining table to a client's specification. This is:",o:["one-off production","batch production","mass production","continuous production"],a:0,why:"One-off production makes a single, unique product."},
+{t:"B4.1",r:"4.1.3",q:"A bakery makes 500 loaves of one type, then changes the settings to make 300 of another. This is:",o:["batch production","one-off production","continuous production","mass customization"],a:0,why:"Batch production makes a set quantity before the line is changed over."},
+{t:"B4.1",r:"4.1.3",q:"A website lets customers choose colours and add their name to otherwise mass-produced trainers. This is:",o:["mass customization","craft production","continuous production","one-off production"],a:0,why:"Mass customization combines mass-production efficiency with personal choices."},
+{t:"B4.1",r:"4.1.3",q:"Which product is most likely to be made by continuous production?",o:["Steel sheet from a rolling mill","A wedding dress","A prototype drone","A batch of 50 school trophies"],a:0,why:"Continuous production runs 24 hours a day for very high-volume, uniform products."},
+{t:"B4.1",r:"4.1.1",q:"Computer integrated manufacturing (CIM) means that:",o:["computers link and control design, planning and production machinery","all products are made by hand","each worker completes a whole product","products are designed without CAD"],a:0,why:"CIM integrates CAD, CAM, robots and stock control under computer control."},
+{t:"B4.1",r:"4.1.2",q:"Which is a disadvantage of automated production?",o:["High initial investment in machinery","Products are inconsistent","It cannot operate at night","It needs more workers than craft production"],a:0,why:"Automation gives consistency and speed but needs high capital investment and is less flexible."},
+{t:"B4.1",r:"4.1.2",q:"In an assembly line, products move from station to station and:",o:["each worker or machine carries out a specific task","one craftsperson makes the whole product","the product is designed at each station","there is no division of labour"],a:0,why:"An assembly line uses division of labour: each station adds or completes one part."},
+{t:"B4.1",r:"4.1.6",q:"A designer adds draft angles to the sides of a plastic container. This is because:",o:["the injection-moulding process needs the part to release easily from the mould","it improves the container's colour","it makes the container hand-made","it increases the material used"],a:0,why:"The limitations of a production process (here, removing the part from the mould) influence the design."},
+/* C1.3 Beyond usability */
+{t:"C1.3",r:"1.3.1",q:"The soft-touch rubber grip on a tool gives the user pleasure through touch. This is:",o:["physio-pleasure","socio-pleasure","psycho-pleasure","ideo-pleasure"],a:0,why:"Physio-pleasure comes from the senses (touch, smell, sound)."},
+{t:"C1.3",r:"1.3.1",q:"A user buys a phone case made from recycled ocean plastic because it reflects their environmental values. This is:",o:["ideo-pleasure","physio-pleasure","socio-pleasure","psycho-pleasure"],a:0,why:"Ideo-pleasure relates to values, beliefs and tastes."},
+{t:"C1.3",r:"1.3.1",q:"A luxury watch that signals status to others mainly provides:",o:["socio-pleasure","physio-pleasure","psycho-pleasure","ideo-pleasure"],a:0,why:"Socio-pleasure comes from relationships with others and social status."},
+{t:"C1.3",r:"1.3.1",q:"An app that is easy to learn and gives a feeling of achievement when a task is completed provides:",o:["psycho-pleasure","physio-pleasure","socio-pleasure","ideo-pleasure"],a:0,why:"Psycho-pleasure is cognitive and emotional satisfaction, including ease of use."},
+{t:"C1.3",r:"1.3.2",q:"In the attract/converse/transact (ACT) model, 'attract' refers to:",o:["the first impression that draws a user to a product","the user's interaction with the product during use","the user committing to buy or keep using the product","recycling the product at the end of its life"],a:0,why:"Attract is the initial appeal (desirability); converse is the interaction (usability); transact is the commitment that follows."},
+{t:"C1.3",r:"1.3.2",q:"A coffee machine is attractive and easy to use, and the user decides to buy the brand's refill pods and recommends it to friends. This last stage is:",o:["transact","attract","converse","physio-pleasure"],a:0,why:"Transact is the outcome of a positive relationship: purchase, loyalty and recommendation."},
+/* C3.2 Life-cycle analysis */
+{t:"C3.2",r:"3.2.2",q:"Which list gives the stages of a cradle-to-grave life-cycle analysis in order?",o:["Raw material extraction, manufacture, distribution, use, disposal","Design, manufacture, marketing, sale, recycling","Manufacture, raw materials, use, distribution, disposal","Use, disposal, manufacture, distribution, raw materials"],a:0,why:"LCA follows a product from extraction (cradle) to disposal (grave)."},
+{t:"C3.2",r:"3.2.1",q:"Global warming potential in an LCA is usually expressed as:",o:["kg of CO₂ equivalent","litres of water","kilowatt-hours only","number of components"],a:0,why:"Different greenhouse gases are converted to a common unit, CO₂e."},
+{t:"C3.2",r:"3.2.1",q:"Ecotoxicity refers to:",o:["the harmful effects of substances released into ecosystems","the energy used in manufacturing","the cost of raw materials","the time a product lasts"],a:0,why:"Ecotoxicity measures toxic effects of emissions on plants, animals and ecosystems."},
+{t:"C3.2",r:"3.2.2",q:"For an electric kettle, which life-cycle stage usually has the greatest environmental impact?",o:["Use","Raw material extraction","Distribution","Disposal"],a:0,why:"Over years of boiling water, the electricity used far outweighs the impact of making the kettle."},
+{t:"C3.2",r:"3.2.2",q:"For a cotton T-shirt, a very large share of the water use occurs at which stage?",o:["Raw material extraction and processing (growing and processing cotton)","Distribution","Disposal","Retail display"],a:0,why:"Growing and processing cotton uses large amounts of water."},
+{t:"C3.2",r:"3.2.1",q:"Resource depletion in an LCA refers to:",o:["the use of non-renewable materials and energy sources faster than they can be replaced","the amount of packaging recycled","the number of users","the lifespan of a product"],a:0,why:"It measures how much a product draws down finite resources such as metals and fossil fuels."},
+{t:"C3.2",r:"3.2.1",q:"A limitation of life-cycle analysis is that:",o:["it needs large amounts of accurate data and can be time-consuming and costly","it only considers the use stage","it cannot compare two products","it ignores energy use"],a:0,why:"Full LCAs are data-hungry, and assumptions (e.g. how long a product is used) affect results."},
+/* C4.1 Design for manufacture strategies */
+{t:"C4.1",r:"4.1.3",q:"Replacing eight screws with snap-fit joints moulded into a plastic case is an example of:",o:["design for assembly","design for disassembly","craft production","planned obsolescence"],a:0,why:"Design for assembly reduces part count and assembly time."},
+{t:"C4.1",r:"4.1.4",q:"Which feature best supports design for disassembly?",o:["Labelled materials and standard screws instead of glue","Permanent adhesives between different materials","Moulding several materials together","Hidden, non-standard fasteners"],a:0,why:"Reversible fixings and labelled materials make separation for repair and recycling easier."},
+{t:"C4.1",r:"4.1.2",q:"Designing a part with an even wall thickness and rounded corners so it can be injection moulded is an example of:",o:["design for process","design for disassembly","inclusive design","mass customization"],a:0,why:"Design for process shapes the product around the needs of a specific manufacturing technique."},
+{t:"C4.1",r:"4.1.3",q:"Which is an advantage of design for assembly?",o:["Fewer parts and faster, cheaper assembly with fewer errors","More fasteners are needed","Products are always easier to recycle","It removes the need for testing"],a:0,why:"Fewer, self-locating parts reduce assembly time, cost and mistakes."},
+{t:"C4.1",r:"4.1.5",q:"How can design for disassembly reduce a product's environmental impact?",o:["Components can be repaired, reused or recycled at the end of life","It uses more adhesive","It makes products lighter","It removes the use stage"],a:0,why:"Easy separation keeps materials in use and out of landfill."},
+{t:"C4.1",r:"4.1.1",q:"Which list contains the three design for manufacture (DfM) strategies?",o:["Design for process, design for assembly, design for disassembly","Design for process, user-centred design, inclusive design","Design for assembly, life-cycle analysis, recycling","Craft, batch and mass production"],a:0,why:"The guide identifies DfM as design for process, assembly and disassembly."}
+];
+
+/* MCQs with diagrams (HL) */
+MCQ_HL.push(
+{t:"A3.3",r:"3.3.9",q:"Which class of lever is shown in the diagram?"+LEVER({F:0.05,L:0.5,E:0.95,Eup:true,alt:"Beam with the fulcrum at the left end, load acting downwards in the middle and effort pulling upwards at the right end"},"Lever"),o:["Second class","First class","Third class","Bell crank"],a:0,why:"Fulcrum at one end, load in the middle, effort at the other end: second class (e.g. wheelbarrow)."},
+{t:"A3.2",r:"3.2.3",q:"Which type of beam is shown?"+BEAM("cant","Beam",{x:330,t:"Load"}),o:["Cantilever beam","Simply supported beam","Fixed beam","Continuously supported beam"],a:0,why:"The beam is built into a wall at one end only and is free at the other: a cantilever."},
+{t:"B3.3",r:"3.3.4",q:"In the gear train shown, gear A is the driver and turns clockwise. Which way does gear C turn?"+GEARS([{t:24,n:"A",drv:1},{t:16,n:"B"},{t:24,n:"C"}],"Simple gear train","A drives B which drives C"),o:["Clockwise, at the same speed as A","Anticlockwise, at the same speed as A","Clockwise, at 1.5 times the speed of A","Anticlockwise, at two-thirds the speed of A"],a:0,why:"B is an idler: it reverses direction twice, so C turns the same way as A. A and C have equal teeth, so the speeds are equal."}
+);
+
+/* Structured questions — HL topics. Figures are original diagrams. */
+const SQ_HL=[
+{t:"A3.2",title:"Structures in a bicycle",stem:"A city bicycle has a welded steel tube frame, a moulded polymer mudguard and a solid rubber brake block.",parts:[
+ {q:"Classify the frame, the mudguard and the brake block as frame, shell or solid structures.",m:3,ms:["Frame: frame structure","mudguard: shell structure","brake block: solid structure"]},
+ {q:"State the main force acting in the seat post when a rider sits on the saddle.",m:1,ms:["Compression"]},
+ {q:"Identify the force acting on the pedal crank as the rider pushes the pedal down, and explain where it is greatest.",m:2,ms:["Bending (and torsion on the axle)","greatest at the joint with the axle/crank root, furthest from the applied force / where the moment is largest"]},
+ {q:"Explain why the frame is designed with triangulated tubes.",m:2,ms:["Triangles cannot change shape without changing the length of a side","so the frame is rigid/resists deformation with little material (light)"]}]},
+{t:"A3.2",title:"Stress–strain graph for a polymer sample",stem:"A student tests a sample of a thermoplastic in a tensile testing machine and plots the graph below."+SSGRAPH("Stress–strain graph for the sample",{alt:"Stress–strain curve rising linearly to point A, a slight plateau to point B, rising to a maximum at C, then falling to break at D"}),parts:[
+ {q:"Identify the points on the graph that show (i) the yield point and (ii) the ultimate (tensile) strength.",m:2,ms:["(i) B (accept A/B — end of elastic region/limit of proportionality)","(ii) C — the maximum stress"]},
+ {q:"State what happens at point D.",m:1,ms:["Fracture/the sample breaks"]},
+ {q:"Describe the behaviour of the material between the origin and point A.",m:2,ms:["Stress is proportional to strain (straight line)/obeys Hooke's law","deformation is elastic — the sample returns to its original length when the load is removed"]},
+ {q:"Explain how the gradient of the graph from the origin to A is used to compare the stiffness of two materials.",m:2,ms:["The gradient is Young's modulus (stress ÷ strain)","a steeper gradient means a higher modulus/stiffer material that strains less under the same stress"]}]},
+{t:"A3.3",title:"A mechanical toy",stem:"A wooden toy has a handle that the user turns. Inside, a cam lifts a wooden bird up and down, and a pair of bevel gears turns a propeller at the front."+CAM("Cam and follower inside the toy","Pear-shaped cam on a shaft lifts a flat follower above it"),parts:[
+ {q:"Describe the input, process and output of the cam mechanism.",m:3,ms:["Input: rotary motion of the handle/user turning the handle","process: the cam converts rotary motion to reciprocating motion","output: the follower/bird moves up and down (reciprocating)"]},
+ {q:"State the type of motion of the propeller.",m:1,ms:["Rotary"]},
+ {q:"Outline why bevel gears are used to drive the propeller.",m:2,ms:["They transmit rotary motion through 90°","so the horizontal handle shaft can turn the propeller on a perpendicular axis"]},
+ {q:"Suggest how the designer could make the bird stay still at the top for part of each turn.",m:2,ms:["Change the cam profile to include a dwell/constant-radius section","e.g. use a cam with a circular arc at its largest radius so the follower does not rise or fall"]}]},
+{t:"A3.3",title:"Levers in kitchen tools",stem:"Kitchen tools often use levers. A nutcracker, a pair of tongs and a bottle opener are being analysed.",parts:[
+ {q:"Identify the class of lever used in (i) a nutcracker and (ii) a pair of tongs.",m:2,ms:["(i) second class","(ii) third class"]},
+ {q:"Sketch and label a nutcracker showing the positions of the load, effort and fulcrum.",m:3,ms:["Fulcrum at the hinged end","load (nut) between fulcrum and effort","effort at the handle ends"],note:"Award [1] for each correctly positioned label on a recognizable sketch."},
+ {q:"Explain why the tongs give a mechanical advantage of less than 1 and why this is acceptable.",m:3,ms:["Effort is applied between the fulcrum and the load/closer to the fulcrum than the load","so the effort needed is greater than the load (MA < 1)","acceptable because the gain is in movement/speed/precision at the tips, and the load (food) is light"]}]},
+{t:"A3.4",title:"Automatic night light",stem:"A plug-in night light switches on an LED when the room becomes dark."+BLOCKS(["LDR|(light sensor)","Comparator /|transistor switch","LED"],"System diagram of the night light"),parts:[
+ {q:"Identify the input, process and output components.",m:3,ms:["Input: LDR/light sensor","process: comparator/transistor/op-amp switching circuit","output: LED"]},
+ {q:"State whether this is an open-loop or closed-loop system and justify your answer.",m:2,ms:["Open loop","the light from the LED is not measured/fed back to change the output (the LDR senses room light, not the result of the output)"],note:"Accept closed loop only if the student argues that the LED light affects the LDR — credit a reasoned justification."},
+ {q:"Explain one way the design could reduce the energy the product uses.",m:2,ms:["Use an LED (rather than filament lamp)","which converts more of the electrical energy into light/low power","or: add a timer/motion sensor so it is only on when needed"],note:"[1] for a method, [1] for the explanation."},
+ {q:"Distinguish between the analogue signal from the LDR circuit and a digital signal.",m:2,ms:["The LDR gives a continuously varying voltage","a digital signal has only discrete values (on/off, 1/0)"]}]},
+{t:"A3.4",title:"Smart plant pot",stem:"A smart plant pot measures soil moisture. A microcontroller switches on a small water pump when the soil is too dry, and sends a message to the owner's phone.",parts:[
+ {q:"State the input device and the output devices in the system.",m:2,ms:["Input: moisture sensor","outputs: water pump/motor and wireless module/phone notification"]},
+ {q:"Explain why the pot is described as a closed-loop system.",m:2,ms:["The moisture sensor measures the effect of watering (feedback)","the pump switches off when the soil reaches the target moisture"]},
+ {q:"Outline the role of the microcontroller (PIC).",m:2,ms:["It is a programmable integrated circuit that reads the sensor value","compares it with a set threshold and switches the pump/sends a message according to its program"]},
+ {q:"Describe why this product can be called an embedded system.",m:2,ms:["The microcontroller and software are built into the product","to carry out one dedicated task/monitor and control watering automatically"]}]},
+{t:"A4.1",title:"Manufacturing a reusable water bottle",stem:"A company makes a reusable water bottle with a stainless-steel body, a polypropylene (PP) screw lid and a silicone seal. The body is spun from a flat steel disc and the lid is injection moulded.",parts:[
+ {q:"Classify spinning and injection moulding into categories of manufacturing technique.",m:2,ms:["Spinning: forming","injection moulding: forming (moulding)"]},
+ {q:"Describe the injection moulding process for the PP lid.",m:3,ms:["PP granules are fed from a hopper and heated until molten","a screw/ram injects the molten polymer into a closed (steel) mould under pressure","the part cools and solidifies, then the mould opens and the lid is ejected"]},
+ {q:"Suggest one finishing process for the steel body and explain its purpose.",m:2,ms:["Polishing/brushing/powder coating/electroplating","improves aesthetics/hides scratches/adds corrosion protection/colour"],note:"[1] for the process, [1] for its purpose."},
+ {q:"Explain why the lid is injection moulded rather than 3D printed.",m:2,ms:["Large production volume, so the high mould cost is spread over many units/low unit cost","fast cycle time/consistent, food-safe smooth finish/accurate screw threads"]}]},
+{t:"A4.1",title:"Additive manufacturing in a medical setting",stem:"A hospital uses additive manufacturing to make (1) quick plastic models of patients' bones for surgeons to study, and (2) titanium hip implants with a lattice surface that bone can grow into.",parts:[
+ {q:"Identify a suitable additive technique for each of (1) and (2).",m:2,ms:["(1) FDM/SLA/material extrusion","(2) powder bed fusion/selective laser melting/SLS (metal)"]},
+ {q:"Distinguish between the use of rapid prototyping in (1) and additive manufacturing in (2).",m:2,ms:["(1) is a base model for visualising/testing/planning — not the final product","(2) is the final functional product used in the body (production of refined parts)"]},
+ {q:"Explain two advantages of additive manufacturing for the implants.",m:4,ms:["Customized to each patient's anatomy (from CT scan data)","better fit, comfort and recovery","complex lattice/internal geometry impossible to machine","encourages bone in-growth and reduces weight","no tooling, so economical for one-off/low volume","quick to produce from the digital file"],note:"[1] for each advantage and [1] for its explanation. Mark as [2] + [2]."}]},
+{t:"A4.1",title:"Shape-memory polymers and 4D printing",stem:"Researchers 4D print a flat-packed stent from a shape-memory polymer. At body temperature the stent expands into a tube that holds a blood vessel open.",parts:[
+ {q:"Define 4D printing.",m:2,ms:["3D printing of an object that changes shape/properties over time","in response to an external stimulus (heat, water, light, pH)"]},
+ {q:"Explain why a shape-memory polymer is suitable for this stent.",m:2,ms:["It can be programmed to remember a shape and return to it when heated","so it can be inserted small/flat and expand at body temperature without extra tools"]},
+ {q:"Suggest one other product that could use 4D printing and the stimulus that would trigger it.",m:2,ms:["e.g. self-assembling flat-pack furniture/packaging — triggered by heat or water","e.g. adaptive clothing/shoes — temperature/moisture; e.g. irrigation valve — water"],note:"[1] product, [1] relevant stimulus."}]},
+{t:"A4.1",title:"Making a garden bench",stem:"A garden bench has cast-iron legs, oak seat slats and is assembled with zinc-plated bolts. The slats are treated with oil.",parts:[
+ {q:"Identify the manufacturing category used to make (i) the legs and (ii) the slats.",m:2,ms:["(i) forming (casting)","(ii) subtractive/wasting (sawing, planing, routing)"]},
+ {q:"Explain why bolts are used rather than adhesive to join the slats to the legs.",m:2,ms:["Bolts are a temporary/mechanical fastening","so slats can be replaced/repaired or the bench flat-packed/disassembled; adhesive between iron and wood may fail outdoors"]},
+ {q:"Outline the purpose of (i) zinc plating the bolts and (ii) oiling the oak.",m:2,ms:["(i) protects the steel bolts from corrosion/rust","(ii) seals the wood against moisture/UV, enhances the grain and is easy to maintain"]},
+ {q:"Suggest why the legs are cast rather than fabricated from steel sections.",m:2,ms:["Casting can produce complex/decorative 3D shapes in one piece","economical for repeat batches using the same pattern/mould; iron is heavy and stable"]}]},
+{t:"B3.2",title:"Calculating Young's modulus",stem:"A design team tests a 100 mm long aluminium rod with a cross-sectional area of 20 mm². A load of 2.8 kN stretches it by 0.2 mm (within the elastic region).",parts:[
+ {q:"Calculate the tensile stress in the rod.",m:2,ms:["σ = F/A = 2800 ÷ 20","= 140 N/mm² (140 MPa)"],note:"Award [1] for working and [1] for the answer with units."},
+ {q:"Calculate the tensile strain.",m:1,ms:["ε = 0.2 ÷ 100 = 0.002 (no units)"]},
+ {q:"Calculate Young's modulus of the aluminium. Give your answer in GPa.",m:2,ms:["E = σ/ε = 140 ÷ 0.002 = 70 000 MPa","= 70 GPa"],note:"Allow error carried forward from (a) and (b)."},
+ {q:"Explain why a high Young's modulus is desirable for the frame of a ladder.",m:2,ms:["High E means the material is stiff/deflects little under load","so the ladder does not bend/flex and feels safe and stable when climbed"]}]},
+{t:"B3.2",title:"Safety factor for a wall-mounted shelf",stem:"A wall shelf bracket is tested to destruction and fails at a load of 1800 N."+BEAM("cant","The shelf bracket acts as a cantilever",{x:320,t:"Load"}),parts:[
+ {q:"The designer specifies a safety factor of 3. Calculate the maximum allowable load on the bracket.",m:2,ms:["Allowable load = ultimate load ÷ SF = 1800 ÷ 3","= 600 N"]},
+ {q:"Explain why a safety factor greater than 1 is used for the bracket.",m:2,ms:["Allows for overloading/unexpected loads (e.g. someone leaning on the shelf, dynamic loads)","and for variation in material quality, manufacturing defects, wear/corrosion over time"]},
+ {q:"Identify where the maximum bending stress occurs in the bracket and suggest how the bracket could be strengthened there.",m:3,ms:["At the wall/fixed end (largest bending moment)","add a strut/diagonal brace/gusset","or increase the depth of the section/use a stiffer shape (e.g. L or T section)/fillet the corner"]},
+ {q:"State one reason why a very high safety factor (e.g. 10) may not be appropriate.",m:1,ms:["Uses more material/heavier/higher cost/less sustainable"]}]},
+{t:"B3.2",title:"Interpreting an FEA result for a footbridge",stem:"A designer runs a finite element analysis (FEA) of a simply supported footbridge deck with crowds walking across it.",parts:[
+ {q:"Sketch a simply supported beam with a central load, showing the direction of the reaction forces.",m:2,ms:["Beam on two supports, load arrow at centre pointing down","reaction arrows pointing up at both supports"]},
+ {q:"The total load at the centre is 24 kN. Calculate the reaction at each support.",m:1,ms:["12 kN each"]},
+ {q:"The FEA plot shows red areas on the underside of the deck at mid-span. Explain what this means.",m:2,ms:["Red shows the highest stress","the underside at mid-span is in tension from bending, so failure/cracking is most likely there"]},
+ {q:"Explain why the crowd load should be treated as a dynamic load.",m:2,ms:["People walking/jumping apply changing/rhythmic forces","which can cause vibration/resonance and peak loads higher than the static weight"]},
+ {q:"Suggest two ways the deck could be strengthened.",m:2,ms:["Add struts/trusses/beams underneath","increase depth/I-section","use a composite/stiffer material","add an intermediate support (continuous beam)"]}]},
+{t:"B3.3",title:"Gear train for a hand-cranked whisk",stem:"A hand-cranked whisk uses the gears shown. The handle turns gear A. Gears B and C are on the same shaft."+GEARS([{t:48,n:"A",drv:1},{t:16,n:"B"},{t:30,n:"C",same:true},{t:10,n:"D"}],"Compound gear train in the whisk","A (48 teeth, driver) meshes with B (16 teeth); C (30 teeth) is on the same shaft as B and meshes with D (10 teeth) which drives the whisk"),parts:[
+ {q:"Identify the type of gear train shown.",m:1,ms:["Compound gear train"]},
+ {q:"Calculate the overall velocity ratio of the gear train.",m:2,ms:["(16/48) × (10/30) = 1/3 × 1/3","= 1/9 (1:9) — the output turns 9 times faster"],note:"Accept 9:1 speed increase. Award [1] for correct method."},
+ {q:"The handle turns at 60 rpm. Calculate the speed of gear D.",m:2,ms:["60 × 9","= 540 rpm"],note:"Allow error carried forward."},
+ {q:"Explain why the user needs to apply more torque at the handle than the whisk blades receive.",m:2,ms:["Gearing up increases speed but reduces torque","(ignoring losses) output torque = input torque ÷ 9, so input torque is greater/the user turns harder"]},
+ {q:"State the direction in which D turns if A turns clockwise.",m:1,ms:["Clockwise (A cw → B acw → C acw → D cw)"]}]},
+{t:"B3.3",title:"Lever in a foot-operated bin",stem:"A pedal bin uses a lever. The user presses a pedal 250 mm from the pivot. A rod attached 50 mm from the pivot on the other side lifts the lid."+LEVER({F:0.7,E:1,L:0.4,Et:"Effort (foot)",Lt:"Load (rod to lid)",dims:[[0.7,1,"250 mm"],[0.4,0.7,"50 mm"]],alt:"First-class lever: effort (foot) 250 mm on one side of the pivot, load (lid rod) 50 mm on the other side"},"Pedal lever (not to scale)"),parts:[
+ {q:"Identify the class of lever.",m:1,ms:["First class (fulcrum between load and effort)"]},
+ {q:"The rod needs a force of 60 N to lift the lid. Calculate the effort required at the pedal.",m:2,ms:["E × 250 = 60 × 50","E = 12 N"]},
+ {q:"Calculate the mechanical advantage of the lever.",m:1,ms:["MA = 60 ÷ 12 = 5"],note:"Allow error carried forward."},
+ {q:"The pedal moves down 30 mm. Calculate how far the rod moves.",m:2,ms:["Distances are in proportion to distances from pivot: 30 × 50/250","= 6 mm"]},
+ {q:"Explain why the designer accepts the small movement of the rod.",m:2,ms:["The trade-off for a large MA is a small output movement","a small rod movement can still open the lid because of a second lever/hinge geometry, while a small effort suits users (inclusive, hands-free)"]}]},
+{t:"B3.3",title:"Belt drive for a pottery wheel",stem:"A motor drives a pottery wheel through a belt. The motor pulley is 60 mm in diameter and the wheel pulley is 240 mm in diameter."+PULLEY(30,96,"Motor pulley 60 mm","Wheel pulley 240 mm","Belt drive (not to scale)","Driver pulley 60 mm diameter on the motor, driven pulley 240 mm diameter on the wheel"),parts:[
+ {q:"Calculate the velocity ratio of the belt drive.",m:1,ms:["240 ÷ 60 = 4 (4:1)"]},
+ {q:"The motor runs at 1400 rpm. Calculate the speed of the pottery wheel.",m:2,ms:["1400 ÷ 4","= 350 rpm"]},
+ {q:"The motor supplies 250 W and the wheel receives 215 W. Calculate the efficiency of the belt drive.",m:2,ms:["215 ÷ 250 × 100","= 86%"]},
+ {q:"Suggest two reasons why a belt drive is used instead of gears.",m:2,ms:["Quieter/smoother","cheaper/no lubrication needed","belt can slip if the wheel jams — a safety feature","can transmit motion over a longer distance"]}]},
+{t:"B3.4",title:"Resistors for an LED indicator",stem:"An LED indicator on a phone charger is powered from a 5 V supply. The LED needs 2 V across it and a current of 20 mA."+CIRC("series",["R","LED"],"5 V","LED and series resistor"),parts:[
+ {q:"Calculate the voltage across the series resistor R.",m:1,ms:["5 − 2 = 3 V"]},
+ {q:"Calculate the resistance of R.",m:2,ms:["R = V/I = 3 ÷ 0.02","= 150 Ω"]},
+ {q:"Calculate the power dissipated by R.",m:2,ms:["P = VI = 3 × 0.02","= 0.06 W (60 mW)"]},
+ {q:"The designer only has 300 Ω resistors. Explain how two of them could be combined to give the required resistance.",m:2,ms:["Connect them in parallel","1/R = 1/300 + 1/300, R = 150 Ω"]}]},
+{t:"B3.4",title:"Logic for a safety guillotine",stem:"A paper guillotine must only cut when the safety guard is closed (A = 1) AND the user presses the cut button (B = 1). An emergency stop (C) must stop the blade at any time.",parts:[
+ {q:"Complete a truth table for inputs A and B and the output of an AND gate.",m:2,ms:["A B Q: 0 0 0; 0 1 0; 1 0 0; 1 1 1"],note:"[2] for all four rows correct, [1] for three."},
+ {q:"State the name of the logic gate that would give output 1 if either of two cut buttons were pressed.",m:1,ms:["OR gate"]},
+ {q:"Draw a flow diagram for a microcontroller program that checks the guard and button before running the motor, and stops it when the emergency stop is pressed.",m:4,ms:["Start/terminator and loop","decision: guard closed? and button pressed? (diamonds with yes/no)","process/output: motor on","decision: emergency stop pressed? → motor off/return to start"],note:"Award [1] for each correct element using appropriate symbols."},
+ {q:"Outline why a relay is used to switch the blade motor.",m:2,ms:["The microcontroller output can only supply a small current","the relay lets it switch the separate high-current/mains motor circuit safely (isolation)"]}]},
+{t:"B3.4",title:"Choosing sensors and communication for a smart bike light",stem:"A rear bike light brightens when the rider brakes and when it gets dark, and sends battery information to a phone app.",parts:[
+ {q:"Identify the sensor used to detect (i) braking and (ii) darkness.",m:2,ms:["(i) accelerometer (motion)","(ii) photoresistor/LDR (light)"]},
+ {q:"Compare Bluetooth and Wi-Fi for sending data from the light to the phone.",m:3,ms:["Bluetooth: short range, low power — suits a battery device paired directly to a phone","Wi-Fi: higher data rate and longer range but higher power use and needs a network/router","Bluetooth is more suitable because the phone is near the bike and battery life matters"]},
+ {q:"Describe how a multimeter could be used to check the battery voltage.",m:2,ms:["Set the meter to a DC voltage range above the expected voltage","connect the probes in parallel across the battery terminals (red +, black −) and read the display"]},
+ {q:"State what an oscilloscope would show if connected across the flashing LED.",m:1,ms:["A waveform/graph of voltage against time (square wave showing on/off)"]}]},
+{t:"B4.1",title:"Producing a kick scooter",stem:"A company sells three products: a mass-market kick scooter (100 000 per year), a limited-edition scooter in batches of 500, and custom adaptive scooters made one at a time for riders with disabilities.",parts:[
+ {q:"Identify the scale of production for each product.",m:3,ms:["Mass-market: mass production","limited edition: batch production","adaptive: one-off production"]},
+ {q:"Discuss one advantage and one disadvantage of using an automated assembly line for the mass-market scooter.",m:4,ms:["Advantage: high output/consistent quality/low unit cost/24-hour operation","development of the advantage","Disadvantage: high capital cost/inflexible for design changes/job losses","development of the disadvantage"],note:"[2] + [2]."},
+ {q:"Explain why craft production is suitable for the adaptive scooters.",m:2,ms:["Each scooter must be tailored to an individual's needs/measurements","skilled workers can make adjustments that machines set up for volume cannot (low volume makes tooling uneconomic)"]}]},
+{t:"B4.1",title:"Deconstructing an electric toothbrush",stem:"An electric toothbrush has an injection-moulded handle, an overmoulded rubber grip, a motor, a rechargeable battery, a printed circuit board and nylon bristles.",parts:[
+ {q:"Identify the manufacturing technique used to add the rubber grip to the handle.",m:1,ms:["Overmoulding/two-shot injection moulding"]},
+ {q:"Explain two factors that influenced the choice of injection moulding for the handle.",m:4,ms:["Scale: mass production","high tooling cost is spread over many units/low unit cost","Material: thermoplastic (e.g. ABS/PP)","melts and flows into complex sealed/waterproof shapes with fine detail"],note:"[2] + [2]."},
+ {q:"Explain how the production method has influenced the aesthetics of the handle.",m:2,ms:["Moulding allows smooth, curved, ergonomic forms and moulded-in colour/texture","no finishing needed; consistent appearance across all units"]}]},
+{t:"C1.3",title:"Four pleasures in a reusable coffee cup",stem:"A brand launches a reusable coffee cup with a soft-touch silicone sleeve, a lid that clicks satisfyingly into place, a range of designs created by local artists, and a discount at cafés for customers who use it.",parts:[
+ {q:"Identify which of the four pleasures is linked to (i) the soft-touch sleeve, (ii) the artist designs chosen to express personal taste, (iii) being seen to use a reusable cup with friends.",m:3,ms:["(i) physio-pleasure","(ii) ideo-pleasure","(iii) socio-pleasure"]},
+ {q:"Explain how the design provides psycho-pleasure.",m:2,ms:["The lid clicks into place, giving reassurance/confidence that it is sealed","easy to use/clean, so the user feels satisfied and in control"]},
+ {q:"Suggest how the ACT model could guide the designer, using one example for each stage.",m:3,ms:["Attract: eye-catching artist designs/colours draw the customer in on the shelf","converse: easy, leak-free use and cleaning over weeks of use","transact: the user keeps using it/buys another/recommends it/uses the café discount (loyalty)"]}]},
+{t:"C1.3",title:"Designing a museum audio guide",stem:"A museum is redesigning its handheld audio guide. Visitors say the current guide works but is boring and awkward to hold.",parts:[
+ {q:"Explain why usability alone is not enough for the new audio guide.",m:2,ms:["Users also respond to emotional/pleasure aspects (desirability)","a guide that is usable but dull does not encourage visitors to engage/enjoy the visit"]},
+ {q:"Suggest one feature that would trigger each of physio-pleasure and socio-pleasure.",m:4,ms:["Physio: comfortable shape/soft grip/lightweight/high-quality sound","development","Socio: sharing/shared listening mode for groups/families, links to share on social media","development"],note:"[2] + [2]."},
+ {q:"Outline how the designers could test whether the new guide is more desirable.",m:2,ms:["User trials/observation with visitors","questionnaires/interviews/rating scales comparing old and new guides on enjoyment"]}]},
+{t:"C3.2",title:"Life-cycle analysis of two kettles",stem:"An LCA compares an electric kettle (Kettle X) with a stovetop kettle (Kettle Y). The bar chart shows global warming potential at each stage for one year of use."+HBAR("Global warming potential, kg CO₂e per year",[["X raw materials",6],["X manufacture",4],["X distribution",1],["X use",48],["X disposal",1],["Y raw materials",9],["Y manufacture",5],["Y distribution",1],["Y use",36],["Y disposal",1]]," kg"),parts:[
+ {q:"Identify the life-cycle stage with the greatest impact for both kettles.",m:1,ms:["Use (stage)"]},
+ {q:"Calculate the total global warming potential of Kettle X for one year.",m:1,ms:["6 + 4 + 1 + 48 + 1 = 60 kg CO₂e"]},
+ {q:"Suggest two design changes that would reduce the impact of Kettle X during use.",m:4,ms:["Insulated/double-walled body","less heat lost so less energy used","Water-level gauge/minimum fill/cup-sized boiling","users heat only the water they need","Auto switch-off/temperature control","avoids reboiling/overheating"],note:"[2] + [2]."},
+ {q:"Explain one limitation of using this LCA to decide which kettle is more sustainable.",m:2,ms:["Results depend on assumptions (how often used, energy source — gas vs electricity mix)","only one impact category shown (e.g. ignores ecotoxicity/resource depletion/water)/one-year period ignores lifespan"]}]},
+{t:"C3.2",title:"Cradle-to-grave thinking for a smartphone",stem:"A phone company wants to reduce the environmental impact of its next smartphone.",parts:[
+ {q:"Outline the five stages of a cradle-to-grave life-cycle analysis.",m:5,ms:["Raw material extraction (mining metals, oil for plastics)","manufacture/processing (chips, screen, assembly)","distribution and transport (shipping, packaging)","use and maintenance (charging, repairs)","disposal and recycling (e-waste, recovery of metals)"]},
+ {q:"Explain why resource depletion is a major concern for smartphones.",m:2,ms:["Phones contain scarce/finite metals (cobalt, rare earths, gold)","short lifespans and low recycling rates mean these are lost faster than they can be replaced"]},
+ {q:"Suggest how the company could use LCA results to inform its design.",m:2,ms:["Identify the stage with the highest impact (often raw materials/manufacture for phones)","then target it, e.g. recycled metals, longer lifespan/modular repairable design, take-back scheme"]}]},
+{t:"C4.1",title:"Design for assembly and disassembly of a desk fan",stem:"A desk fan currently has 34 parts, including 12 screws of four different sizes. The casing halves are glued together.",parts:[
+ {q:"Outline what is meant by design for assembly.",m:2,ms:["Designing the product so components can be put together easily/quickly","e.g. fewer parts, self-locating parts, standard fasteners"]},
+ {q:"Suggest two design for assembly changes to the fan.",m:4,ms:["Replace screws with snap fits/clips","reduces parts and assembly time","Standardize screws to one size","fewer tools/no confusion/errors","Combine parts into single mouldings","reduces part count and cost"],note:"[2] + [2]."},
+ {q:"Explain why gluing the casing is poor design for disassembly.",m:2,ms:["The casing cannot be opened without damage","so the motor cannot be repaired/the materials cannot be separated for recycling"]},
+ {q:"Discuss how design for disassembly reduces the fan's environmental impact.",m:2,ms:["Parts can be repaired/replaced, extending lifespan","materials can be separated and recycled at end of life, reducing landfill and raw material extraction"]}]},
+{t:"C4.1",title:"Design for process: a moulded chair",stem:"A designer is developing a stackable polypropylene chair that will be injection moulded in one piece.",parts:[
+ {q:"Outline two advantages of design for process for this chair.",m:2,ms:["Reduces manufacturing cost/time","fewer defects/consistent quality","one-piece moulding avoids assembly"]},
+ {q:"Explain two features the designer should include so that the chair can be injection moulded successfully.",m:4,ms:["Draft angles on vertical faces","so the chair releases from the mould","Even wall thickness","prevents sink marks/warping as it cools","Ribs instead of thick sections","adds stiffness without thick, slow-cooling material","Rounded corners/fillets","help plastic flow and reduce stress concentrations"],note:"[2] + [2]."},
+ {q:"Suggest how the chair's design could support recycling at the end of its life.",m:2,ms:["Single material (mono-material PP) with no metal inserts","material identification code moulded in so it can be sorted"]}]}
+];
+
+/* Extended [9] questions for HL topic tests */
+const EQ_HL=[
+{t:"A3.2",m:9,q:"Evaluate the use of safety factors in the design of products such as children's car seats.",ind:["SF = ultimate load ÷ allowable load; SF > 1 gives a margin for overload","car seats face dynamic loads in a crash far above static loads","variability in materials, manufacture and wear over time","high SF increases mass, material use and cost","standards set minimum SFs and testing","conclusion weighing safety against cost/weight"]},
+{t:"A4.1",m:9,q:"Discuss the impact of additive manufacturing on the production of customized products.",ind:["No tooling — economic for one-off/low volume","complex geometries, lattices, consolidated parts","customization from scan data (medical, sports, jewellery)","slower and costlier per part than moulding at high volume","limited materials/finish; post-processing","distributed/on-demand production, less stock","conclusion"]},
+{t:"B3.3",m:9,q:"Discuss the factors a designer should consider when selecting between gear, belt and lever systems for a product.",ind:["Required change in speed, torque or direction","efficiency and losses (friction, slip)","distance between shafts","noise, lubrication, maintenance","cost, size and weight","safety (belt slip as overload protection)","conclusion with example"]},
+{t:"B3.4",m:9,q:"Evaluate the use of microcontrollers in everyday products.",ind:["Programmable — one chip can do many tasks; easy to update","reduce component count, size and cost","enable smart features, IoT connectivity, feedback control","require software development and testing","power use, security and obsolescence/e-waste concerns","conclusion"]},
+{t:"B4.1",m:9,q:"Discuss the advantages and disadvantages of computer integrated manufacturing (CIM) for a furniture manufacturer.",ind:["Links CAD, CAM, stock control and scheduling","consistency, speed, reduced waste, mass customization possible","high capital cost, training, maintenance","reduced workforce/skills","vulnerability to breakdowns/cyber-attacks","conclusion"]},
+{t:"C1.3",m:9,q:"To what extent should designers prioritise pleasure over usability?",ind:["Usability is a baseline — products must work","four-pleasure framework shows emotional factors drive choice and attachment","ACT model: attraction and transaction depend on desirability","pleasurable products may be kept longer (sustainability)","risk of style over function","conclusion"]},
+{t:"C3.2",m:9,q:"Evaluate the usefulness of life-cycle analysis for designers.",ind:["Identifies the stages with the greatest impact (hot spots)","allows fair comparison of alternatives","covers several impact categories","data-hungry, time-consuming, expensive","depends on assumptions/boundaries; can be used for greenwashing","conclusion"]},
+{t:"C4.1",m:9,q:"Discuss how design for manufacture strategies can reduce the environmental impact of products.",ind:["Design for process: less waste, energy-efficient processes","design for assembly: fewer parts and materials","design for disassembly: repair, reuse, recycling","conflicts: snap fits may break on disassembly; mono-materials limit performance","conclusion"]}
+];
+
+/* HL Paper 2 design challenges (30 marks each): product analysis [6], problem statement [6], specification/design/evaluation [5+5+8]. Original scenarios. */
+const DC_HL=[
+{id:"dc-vaccine",title:"Solar vaccine cool box for remote clinics",t:"C3.1",
+intro:`<p>Health workers in remote mountain villages must carry vaccines on foot for up to six hours from the nearest road. Vaccines must stay between 2 °C and 8 °C or they become useless. Many clinics have no reliable electricity.</p>`+T2([["User","Profile","Needs"],["Community nurse","32 years old; walks 10–15 km on mountain paths","Light, comfortable to carry, easy to check temperature"],["Clinic manager","Runs a clinic with a small solar panel","Low cost, repairable locally, records of temperature"],["Parent","Brings children for vaccination","Confidence that vaccines are safe and effective"]],"Figure: user personas"),
+qs:[
+ {title:"Product analysis",stem:`<p>Two existing products are being analysed to inspire a new design.</p>`+BLOCKS(["Ice packs","Polystyrene|box","Shoulder strap"],"Product 1: insulated carrier with frozen ice packs (4.5 kg loaded, keeps cool for 36 h if ice packs are frozen)")+BLOCKS(["Solar panel","Battery +|controller","Compressor|fridge (14 kg)"],"Product 2: solar-powered compressor fridge with temperature display",0,"Product 2: a 14 kg solar fridge — solar panel charges a battery which runs a compressor fridge with a temperature display and controller"),parts:[
+  {q:"Analyse the strengths and weaknesses of Product 1.",m:3,ms:["Strengths: lightweight/portable with strap","cheap, simple, no electricity needed in use","Weaknesses: needs a freezer to refreeze ice packs","frozen packs can freeze vaccines below 2 °C/no temperature monitoring","polystyrene is fragile/not durable/poor sustainability"],note:"Award [1] for each relevant strength or weakness up to [3]; at least one of each needed for [3]."},
+  {q:"Analyse the strengths and weaknesses of Product 2.",m:3,ms:["Strengths: active temperature control (closed loop)","display lets users check temperature/data logging","renewable energy","Weaknesses: heavy (14 kg)/not portable on foot","expensive and complex to repair locally","depends on sunlight and battery condition"],note:"Award [1] for each relevant strength or weakness up to [3]; at least one of each needed for [3]."}]},
+ {title:"Analyse the challenge",stem:`<p>The nurses need to carry up to 2 litres of vaccine vials for a full day of walking and outreach, in temperatures up to 35 °C.</p>`,parts:[
+  {q:"Construct a problem statement that summarizes the analysis of the challenge and details your design intentions for a portable vaccine carrier.",m:6,ms:["Identifies the users (community nurses, clinics, families)","identifies the problem: keeping vaccines at 2–8 °C during long journeys without electricity","states the context/constraints: on foot, up to 6 h, 35 °C, 2 litres, remote and low cost","design intention linked to function (e.g. insulated, phase-change/solar-charged cooling)","design intention linked to the user (lightweight, ergonomic carrying, easy temperature check)","design intention linked to sustainability/repair (local repair, durable, renewable energy)"],note:"Award [1] for each relevant point up to [6]."}]},
+ {title:"Develop and evaluate a solution",stem:`<p>The clinic has funding for a new carrier. Constraints: maximum loaded mass 6 kg; must be repairable with local tools; unit cost under USD 120; must record the temperature.</p>`,parts:[
+  {q:"Write five design specifications for the vaccine carrier.",m:5,ms:["Function: keep contents between 2 °C and 8 °C for at least 8 hours at 35 °C","Mass: loaded mass under 6 kg","Ergonomics: padded straps sized for the 5th–95th percentile adult shoulder width/back length","Electronics: temperature sensor with display and alarm/data logging","Materials/sustainability: durable, repairable, recyclable outer shell; cost below USD 120"],note:"Award [1] for each specification that is specific and measurable/justified. Generic statements without values score [0]."},
+  {q:"Design a solution. Use a clearly labelled, annotated diagram to show how your design meets your specifications.",m:5,box:true,ms:["Clear diagram of the carrier form","insulation method labelled (e.g. vacuum panels/foam with phase-change packs that hold 5 °C)","cooling/power method labelled (e.g. small solar panel charging a Peltier or fan; or phase-change)","temperature sensor, display/alarm and microcontroller labelled","ergonomic/carrying features and materials labelled with justification"],note:"Award [1] for each relevant, annotated feature linked to the specifications up to [5]."},
+  {q:"Evaluate the success of your design for the nurses, the clinics and the families.",m:8,ms:["Judges how well temperature is maintained (function)","evaluates portability/comfort for nurses","evaluates monitoring/data for clinic managers","evaluates cost and repairability","evaluates energy use/sustainability/LCA considerations","identifies a limitation of the design","suggests a specific improvement or further testing","reaches an overall judgement (full/partial success) supported by evidence"],note:"Award [1] for each relevant evaluative point up to [8]."}]}
+]},
+{id:"dc-utensil",title:"Eating aid for users with hand tremor",t:"C1.2",
+intro:`<p>People with hand tremors find it hard to eat without spilling food, which can affect their independence and confidence when eating in public.</p>`+T2([["User","Profile","Needs"],["Retired teacher","74, mild tremor, enjoys eating out with friends","Discreet, does not look like a medical device"],["Care-home resident","82, strong tremor, limited grip strength","Large, easy-to-hold handle; very stable spoon"],["Occupational therapist","Supports many patients","Easy to clean, adjustable, durable"]],"Figure: user personas"),
+qs:[
+ {title:"Product analysis",stem:`<p>Two existing products are being analysed.</p>`+BLOCKS(["Thick foam|handle","Bendable|stainless steel","Spoon head"],"Product 1: foam-handled bendable spoon (passive, USD 12)")+BLOCKS(["Motion sensors","Microcontroller","Motors move|spoon head"],"Product 2: electronic stabilizing spoon (active, USD 250, rechargeable)",0,"Product 2: an electronic stabilising spoon: motion sensors feed a microcontroller that drives motors to move the spoon head opposite to the tremor"),parts:[
+  {q:"Analyse the strengths and weaknesses of Product 1.",m:3,ms:["Strengths: cheap, simple, no batteries","large handle easy to grip/bend to suit user","Weaknesses: does not reduce tremor movement","foam absorbs food/hard to clean/hygiene","looks like a medical aid (stigma)"],note:"[1] per relevant point up to [3]; at least one of each needed for [3]."},
+  {q:"Analyse the strengths and weaknesses of Product 2.",m:3,ms:["Strengths: actively cancels much of the tremor (closed-loop feedback)","greater independence","Weaknesses: expensive","must be charged/electronics cannot go in dishwasher","heavier/bulky handle"],note:"[1] per relevant point up to [3]; at least one of each needed for [3]."}]},
+ {title:"Analyse the challenge",stem:`<p>A charity wants an affordable eating aid that works for users with mild to strong tremors.</p>`,parts:[
+  {q:"Construct a problem statement that summarizes the analysis of the challenge and details your design intentions for an eating aid.",m:6,ms:["Identifies the users and their range of tremor/grip strength","states the problem: spilling food, loss of independence/dignity","identifies constraints: affordable (well below USD 250), hygiene, durability","design intention: reduce the effect of tremor (e.g. mass, damping, gimbal, or low-cost electronics)","design intention: inclusive/ergonomic grip that does not look medical (ideo/socio-pleasure)","design intention: easy to clean/dishwasher safe/repairable"],note:"[1] for each relevant point up to [6]."}]},
+ {title:"Develop and evaluate a solution",stem:`<p>Constraints: retail price under USD 40; dishwasher-safe parts that touch food; usable by the 5th–95th percentile adult hand.</p>`,parts:[
+  {q:"Write five design specifications for the eating aid.",m:5,ms:["Function: reduce spoon-head movement from tremor by a stated amount (e.g. 50%) in user trials","Ergonomics: grip diameter suitable for 5th–95th percentile hand, e.g. 30–40 mm, non-slip","Hygiene: food-contact parts dishwasher-safe/food-grade stainless steel or silicone","Cost: retail price below USD 40","Aesthetics/inclusive: looks like ordinary cutlery; interchangeable fork/spoon heads"],note:"[1] for each specific, measurable specification."},
+  {q:"Design a solution. Use a clearly labelled, annotated diagram to show how your design meets your specifications.",m:5,box:true,ms:["Recognizable diagram of the eating aid","tremor-reducing mechanism labelled (e.g. weighted handle, damper, gimbal/pivot that keeps the spoon level)","grip/handle design with dimensions/materials","detachable dishwasher-safe head","aesthetic/inclusive features annotated"],note:"[1] for each relevant annotated feature up to [5]."},
+  {q:"Evaluate the success of your design for the users identified.",m:8,ms:["Effectiveness at reducing spills for mild vs strong tremor","comfort and grip for different hand sizes","independence and dignity (beyond usability: pleasure, discreet look)","hygiene and ease of cleaning","cost compared with existing products","durability/materials/sustainability","limitation and suggested improvement/further testing with users","overall supported judgement"],note:"[1] for each relevant evaluative point up to [8]."}]}
+]},
+{id:"dc-shelter",title:"Flat-pack emergency shelter",t:"B3.2",
+intro:`<p>After floods and earthquakes, families often wait weeks in tents that leak, overheat and blow down in storms. An aid organization wants a better emergency shelter that can be shipped flat and built by the family.</p>`+T2([["Stakeholder","Profile","Needs"],["Displaced family","5 people, no tools, may stay for 6–18 months","Secure, private, cool in the day, warm at night"],["Aid logistics officer","Ships thousands of shelters by truck and air","Flat-pack, light, quick to build without experts"],["Local authority","Manages the camp site","Fire safety, reusable or recyclable after use"]],"Figure: stakeholders"),
+qs:[
+ {title:"Product analysis",stem:`<p>Two existing shelters are being analysed.</p>`+BLOCKS(["Canvas tent","Steel poles","Guy ropes|and pegs"],"Product 1: family canvas tent (40 kg, 2 hours to erect, lasts about 6 months)")+BLOCKS(["Steel frame","Polymer|panels","Solar lamp"],"Product 2: rigid panel shelter (100 kg, 4 hours to build with 4 people, lasts 3 years)",0,"Product 2: rigid shelter with steel frame, polymer wall panels and a solar lamp; 100 kg, 4 hours to build with 4 people, lasts 3 years"),parts:[
+  {q:"Analyse the strengths and weaknesses of Product 1.",m:3,ms:["Strengths: cheap, light and compact to transport","quick and familiar to erect","Weaknesses: short lifespan/tears and leaks","poor insulation — hot in day, cold at night","low security/privacy; can blow down in storms"],note:"[1] per relevant point up to [3]; at least one of each needed for [3]."},
+  {q:"Analyse the strengths and weaknesses of Product 2.",m:3,ms:["Strengths: durable/rigid/lockable — better security","better insulation and weather resistance","solar lamp improves safety at night","Weaknesses: heavy/bulky to ship","needs several people/longer build time","higher cost per unit"],note:"[1] per relevant point up to [3]; at least one of each needed for [3]."}]},
+ {title:"Analyse the challenge",stem:`<p>The camp is in a region with strong winds (up to 90 km/h), heavy rain and night temperatures of 5 °C.</p>`,parts:[
+  {q:"Construct a problem statement that summarizes the analysis of the challenge and details your design intentions for the shelter.",m:6,ms:["Identifies users/stakeholders (family, logistics, local authority)","states the problem: temporary shelters fail/are uncomfortable and unsafe","constraints: flat-pack, build without tools/experts, wind 90 km/h, 6–18 months","design intention: structural stability (triangulated frame, anchoring, safety factor)","design intention: comfort/privacy/security (insulation, lockable door)","design intention: design for assembly/disassembly and end-of-life reuse/recycling"],note:"[1] for each relevant point up to [6]."}]},
+ {title:"Develop and evaluate a solution",stem:`<p>Constraints: maximum packed mass 60 kg; build time under 3 hours by two adults without tools; floor area at least 17.5 m²; must withstand winds of 90 km/h.</p>`,parts:[
+  {q:"Write five design specifications for the shelter.",m:5,ms:["Structure: withstand 90 km/h wind loads with a safety factor of at least 2","Size/mass: floor area ≥ 17.5 m²; packed mass ≤ 60 kg; packs flat to fit a standard pallet","Assembly: built by two adults in under 3 hours with no tools (design for assembly)","Comfort: insulated panels keep internal temperature within a stated range; ventilation; lockable door","End of life/materials: panels reusable/recyclable, fire-retardant materials"],note:"[1] for each specific, measurable specification."},
+  {q:"Design a solution. Use a clearly labelled, annotated diagram to show how your design meets your specifications.",m:5,box:true,ms:["Recognizable diagram of the shelter","structural system labelled (e.g. triangulated/arched frame, struts, ground anchors)","joining method for tool-free assembly (snap fits, pins, colour-coded parts)","materials and insulation labelled with justification","features for comfort/security/end of life annotated"],note:"[1] for each relevant annotated feature up to [5]."},
+  {q:"Evaluate the success of your design for the family, the aid organization and the local authority.",m:8,ms:["Structural performance in wind/rain (safety factor, testing evidence)","ease and speed of assembly by the family","transport efficiency (flat-pack, mass)","comfort, privacy and security","cost compared with existing shelters","end-of-life/LCA and reuse","limitation and specific improvement/further testing","overall supported judgement"],note:"[1] for each relevant evaluative point up to [8]."}]}
+]}
+];
+
+
+MCQ.push(...MCQ_HL);SQ.push(...SQ_HL);EQ.push(...EQ_HL);
+/* add a figure to two SL questions */
+{const f=SQ.find(q=>q.title==="Interpreting an FEA result");if(f)f.stem+=FEA_BRACKET();const s=SQ.find(q=>q.title==="User journey storyboard");if(s)s.stem+=BLOCKS(["1 Find bike|in app","2 Unlock","3 Adjust|seat","4 Ride","5 Find dock","6 Return"],"Storyboard frames for the bike-sharing journey")}
 const TOPICS=[
  ["A1.1","Ergonomics",10],["A2.1","User-centred research methods",5],["A2.2","Prototyping techniques",10],["A3.1","Material classification and properties",8],
+ ["A3.2","Introduction to structural systems",6,1],["A3.3","Introduction to mechanical systems",6,1],["A3.4","Introduction to electronic systems",6,1],["A4.1","Manufacturing techniques",20,1],
  ["B1.1","User-centred design",4],["B2.1","The design process",6],["B2.2","Modelling and prototyping",30],["B3.1","Material selection",4],
- ["C1.1","Responsibility of the designer",2],["C1.2","Inclusive design",2],["C2.1","Design for sustainability",2],["C2.2","Design for a circular economy",2],["C3.1","Product analysis and evaluation",5]];
+ ["B3.2","Structural systems application and selection",8,1],["B3.3","Mechanical systems application and selection",8,1],["B3.4","Electronic systems application and selection",10,1],["B4.1","Production systems",7,1],
+ ["C1.1","Responsibility of the designer",2],["C1.2","Inclusive design",2],["C1.3","Beyond usability",6,1],["C2.1","Design for sustainability",2],["C2.2","Design for a circular economy",2],["C3.1","Product analysis and evaluation",5],["C3.2","Life-cycle analysis",7,1],["C4.1","Design for manufacture strategies",6,1]];
+const HLONLY=new Set(TOPICS.filter(t=>t[3]).map(t=>t[0]));
+const MASK_ORDER=TOPICS.filter(t=>!t[3]).map(t=>t[0]).concat(TOPICS.filter(t=>t[3]).map(t=>t[0])); // SL codes keep their old bit positions
 const TNAME=Object.fromEntries(TOPICS.map(t=>[t[0],t[1]]));
 const BANDS=[["0","The response does not reach a standard described below."],["1–3","Limited knowledge; mostly descriptive with few relevant points; little or no use of examples; no conclusion."],["4–6","Relevant knowledge and some analysis; points partly developed with some examples; discussion may be one-sided; limited conclusion."],["7–9","Accurate, detailed knowledge; well-developed, balanced arguments supported by relevant examples; clear, justified conclusion."]];
 const LET="ABCD";
@@ -686,20 +1101,26 @@ function newSeed(){return Math.floor(Math.random()*36**5).toString(36).toUpperCa
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v|0));
 
 /* ---------- state ---------- */
-const S={mode:"p1",view:"q",p1n:30,topics:new Set(TOPICS.map(t=>t[0])),tm:10,ts:2,te:0,seed:newSeed(),answers:{},checked:false,paper:null};
+const S={mode:"p1",view:"q",lvl:"sl",p1n:30,topics:new Set(TOPICS.map(t=>t[0])),tm:10,ts:2,te:0,seed:newSeed(),answers:{},checked:false,paper:null};
 
 /* ---------- codes ---------- */
-function topicMask(){return TOPICS.reduce((m,t,i)=>S.topics.has(t[0])?m|(1<<i):m,0).toString(36).toUpperCase()}
+const isHL=()=>S.lvl==="hl";
+const topicOK=c=>isHL()||!HLONLY.has(c);
+const LV=()=>isHL()?"HL":"SL";
+const LVL=()=>isHL()?"Higher level":"Standard level";
+const levelTopics=()=>TOPICS.map(t=>t[0]).filter(topicOK);
+function topicMask(){return MASK_ORDER.reduce((m,c,i)=>S.topics.has(c)&&topicOK(c)?m|(1<<i):m,0).toString(36).toUpperCase()}
 function makeCode(){
-  if(S.mode==="p1")return`P1-${S.p1n}-${S.seed}`;
-  if(S.mode==="p2")return`P2-${S.seed}`;
-  return`T-${topicMask()}-${S.tm}.${S.ts}.${S.te}-${S.seed}`;
+  const H=isHL()?"H":"";
+  if(S.mode==="p1")return`P1${H}-${S.p1n}-${S.seed}`;
+  if(S.mode==="p2")return`P2${H}-${S.seed}`;
+  return`T${H}-${topicMask()}-${S.tm}.${S.ts}.${S.te}-${S.seed}`;
 }
 function parseCode(c){
   c=c.trim().toUpperCase();let m;
-  if(m=c.match(/^P1-(\d+)-([A-Z0-9]+)$/)){S.mode="p1";S.p1n=clamp(+m[1],10,40);S.seed=m[2];return true}
-  if(m=c.match(/^P2-([A-Z0-9]+)$/)){S.mode="p2";S.seed=m[1];return true}
-  if(m=c.match(/^T-([A-Z0-9]+)-(\d+)\.(\d+)\.(\d+)-([A-Z0-9]+)$/)){const mask=parseInt(m[1],36);S.mode="topic";S.topics=new Set(TOPICS.filter((t,i)=>mask&(1<<i)).map(t=>t[0]));S.tm=clamp(+m[2],0,60);S.ts=clamp(+m[3],0,20);S.te=clamp(+m[4],0,6);S.seed=m[5];return true}
+  if(m=c.match(/^P1(H?)-(\d+)-([A-Z0-9]+)$/)){S.mode="p1";S.lvl=m[1]?"hl":"sl";S.p1n=clamp(+m[2],10,60);S.seed=m[3];return true}
+  if(m=c.match(/^P2(H?)-([A-Z0-9]+)$/)){S.mode="p2";S.lvl=m[1]?"hl":"sl";S.seed=m[2];return true}
+  if(m=c.match(/^T(H?)-([A-Z0-9]+)-(\d+)\.(\d+)\.(\d+)-([A-Z0-9]+)$/)){S.lvl=m[1]?"hl":"sl";m.splice(1,1);const mask=parseInt(m[1],36);S.mode="topic";S.topics=new Set(MASK_ORDER.filter((c,i)=>mask&(1<<i)));S.tm=clamp(+m[2],0,60);S.ts=clamp(+m[3],0,20);S.te=clamp(+m[4],0,6);S.seed=m[5];return true}
   return false;
 }
 
@@ -731,20 +1152,44 @@ function pickMCQ(n,topics,r){
 function sqMarks(q){return q.parts.reduce((s,p)=>s+p.m,0)}
 function build(){
   const r=rng(makeCode());
-  const P={mode:S.mode,code:makeCode(),sections:[]};
+  const P={mode:S.mode,code:makeCode(),sections:[],lvl:S.lvl};
   if(S.mode==="p1"){
-    const qs=pickMCQ(S.p1n,TOPICS.map(t=>t[0]),r);
+    const qs=pickMCQ(S.p1n,levelTopics(),r);
     P.title="Paper 1";P.sub="Multiple-choice questions";P.sections.push({h:"Answer all questions",i:"Choose the one best answer (A, B, C or D) for each question.",items:qs});
-    P.marks=qs.length;P.mins=Math.max(10,Math.round(qs.length*2/5)*5);
+    P.marks=qs.length;P.mins=Math.max(10,Math.round(qs.length*(isHL()?2.25:2)/5)*5);
     P.instr=["Answer all questions.","A calculator is required for this paper.","For each question, choose the answer you consider to be the best.",`The maximum mark for this paper is [${qs.length} marks].`];
+  }else if(S.mode==="p2"&&isHL()){
+    const TARGET=50;let best=null;const pool=SQ.filter(q=>topicOK(q.t));
+    for(let at=0;at<80;at++){
+      const chosen=[],used=new Set();
+      const take=list=>{const q=list.find(x=>!used.has(x.t));if(q){chosen.push(q);used.add(q.t)}};
+      const sh=shuffle(pool,r);
+      ["A","B","C"].forEach(k=>take(sh.filter(q=>q.t[0]===k&&HLONLY.has(q.t))));
+      ["A","B","C"].forEach(k=>take(sh.filter(q=>q.t[0]===k&&!HLONLY.has(q.t))));
+      let tot=chosen.reduce((s,q)=>s+sqMarks(q),0);
+      for(const q of sh){if(tot>=TARGET)break;if(!used.has(q.t)){chosen.push(q);used.add(q.t);tot+=sqMarks(q)}}
+      const ord=TOPICS.map(t=>t[0]);chosen.sort((a,b)=>ord.indexOf(a.t)-ord.indexOf(b.t));
+      let qs=chosen.map(q=>({...q,parts:q.parts.slice()}));
+      for(let i=qs.length-1;i>=0&&tot>TARGET;i--){while(qs[i].parts.length>2&&tot>TARGET){tot-=qs[i].parts.pop().m}}
+      if(!best||Math.abs(TARGET-tot)<Math.abs(TARGET-best.tot)||(tot<=TARGET&&best.tot>TARGET))best={qs,tot};
+      if(tot===TARGET)break;
+    }
+    const A=best.qs.map(q=>({kind:"sq",...q,m:sqMarks(q)}));
+    const dc=shuffle(DC_HL,r)[0];
+    const B=dc.qs.map(q=>({kind:"sq",t:dc.t,title:q.title,stem:q.stem,parts:q.parts,m:sqMarks(q)}));
+    P.title="Paper 2";P.sub=`Short-answer questions and a design challenge: ${dc.title}`;
+    P.sections.push({h:"Section A",i:"Answer all questions. Answers must be written within the answer spaces provided.",items:A});
+    P.sections.push({h:"Section B · Design challenge",i:"Answer all questions. Use the context, figures and data provided.",ctx:`<p><b>${dc.title}</b></p>${dc.intro}`,items:B});
+    P.marks=best.tot+B.reduce((s,q)=>s+q.m,0);P.mins=150;
+    P.instr=["Answer all questions.","Answers must be written within the answer spaces provided.","A calculator is required for this paper.",`The maximum mark for this examination paper is [${P.marks} marks].`];
   }else if(S.mode==="p2"){
     const TARGET=50;let best=null;
     for(let at=0;at<60;at++){
-      const themes={A:[],B:[],C:[]};for(const q of shuffle(SQ,r))themes[q.t[0]].push(q);
+      const SQSL=SQ.filter(q=>!HLONLY.has(q.t));const themes={A:[],B:[],C:[]};for(const q of shuffle(SQSL,r))themes[q.t[0]].push(q);
       const chosen=[],used=new Set();
       const take=list=>{const q=list.find(x=>!used.has(x.t));if(q){chosen.push(q);used.add(q.t)}};
       ["A","B","C"].forEach(k=>take(themes[k]));
-      const pool=shuffle(SQ,r);let tot=chosen.reduce((s,q)=>s+sqMarks(q),0);
+      const pool=shuffle(SQSL,r);let tot=chosen.reduce((s,q)=>s+sqMarks(q),0);
       while(tot<TARGET){const q=pool.find(x=>!used.has(x.t)&&!chosen.includes(x));if(!q)break;chosen.push(q);used.add(q.t);tot+=sqMarks(q)}
       const ord=TOPICS.map(t=>t[0]);chosen.sort((a,b)=>ord.indexOf(a.t)-ord.indexOf(b.t));
       let qs=chosen.map(q=>({...q,parts:q.parts.slice()}));
@@ -759,8 +1204,8 @@ function build(){
     P.marks=best.tot;P.mins=90;
     P.instr=["Answer all questions.","Answers must be written within the answer spaces provided.",`The maximum mark for this paper is [${best.tot} marks].`];
   }else{
-    const tp=TOPICS.map(t=>t[0]).filter(c=>S.topics.has(c));
-    P.title="Topic test";P.sub=tp.length===TOPICS.length?"All SL topics":tp.map(c=>c+" "+TNAME[c]).join(" · ");
+    const tp=levelTopics().filter(c=>S.topics.has(c));
+    P.title="Topic test";P.sub=!tp.length?"No topics selected":tp.length===levelTopics().length?`All ${LV()} topics`:tp.map(c=>c+" "+TNAME[c]).join(" · ");
     let mk=0;const short=[];
     if(S.tm>0&&tp.length){const qs=pickMCQ(S.tm,tp,r);if(qs.length<S.tm)short.push(`${qs.length} of ${S.tm} MCQs available`);if(qs.length){P.sections.push({h:"Section A",i:"Multiple choice. Choose the one best answer.",items:qs});mk+=qs.length}}
     if(S.ts>0&&tp.length){const al=allocate(S.ts,tp,c=>SQ.filter(q=>q.t===c).length);let qs=[];for(const x of al)qs=qs.concat(shuffle(SQ.filter(q=>q.t===x.c),r).slice(0,x.k));
@@ -795,14 +1240,14 @@ function renderItem(it,n,view,print){
       return`<li class="${cls}">${inner}</li>`}).join("");
     let after="";
     if(showMS||(view==="i"&&S.checked))after=`<div class="ms"><b class="h">Answer ${LET[it.ans]}</b>${it.why}</div>`;
-    return`<div class="q"><div class="qn">${n}.</div><div class="qbody"><p class="qtext">${it.q}${tag}</p><ul class="opts">${lis}</ul>${after}</div></div>`;
+    return`<div class="q"><div class="qn">${n}.</div><div class="qbody"><div class="qtext">${it.q}${tag}</div><ul class="opts">${lis}</ul>${after}</div></div>`;
   }
   if(it.kind==="sq"){
     const parts=it.parts.map((p,i)=>{
       const ms=showMS?msBlockSQpart(p):(view==="i"&&!print?`<button class="reveal" data-rv="${n}-${i}">Show markscheme</button><div hidden id="rv-${n}-${i}">${msBlockSQpart(p)}</div>`:"");
-      const lines=view==="q"||print&&view!=="m"?`<div class="lines" style="--n:${linesFor(p.m)}"></div>`:"";
+      const lines=view==="q"||print&&view!=="m"?(p.box?`<div class="drawbox"></div>`:`<div class="lines" style="--n:${p.m>=6?Math.min(16,p.m*2):linesFor(p.m)}"></div>`):"";
       return`<div class="part"><span class="pl">${partLabel(i)}</span><span>${p.q}</span><span class="mk">[${p.m}]</span>${lines}</div>${ms}`}).join("");
-    return`<div class="q"><div class="qn">${n}.</div><div class="qbody"><p class="stem"><b>${it.title}</b> <span class="tag">${it.t} ${TNAME[it.t]}</span></p><div class="dtwrap">${it.stem}</div>${parts}<div class="mk" style="text-align:right;margin-top:6px">Total [${it.m}]</div></div></div>`;
+    return`<div class="q"><div class="qn">${n}.</div><div class="qbody"><p class="stem"><b>${it.title}</b> <span class="tag">${it.t} ${TNAME[it.t]}</span>${HLONLY.has(it.t)?'<span class="hlb">HL</span>':""}</p><div class="dtwrap">${it.stem}</div>${parts}<div class="mk" style="text-align:right;margin-top:6px">Total [${it.m}]</div></div></div>`;
   }
   const ms=showMS?msBlockEQ(it):(view==="i"&&!print?`<button class="reveal" data-rv="${n}-e">Show markscheme</button><div hidden id="rv-${n}-e">${msBlockEQ(it)}</div>`:"");
   const lines=view==="q"?`<div class="lines" style="--n:14"></div>`:"";
@@ -810,7 +1255,7 @@ function renderItem(it,n,view,print){
 }
 function render(P,view,print){
   const vLabel=view==="m"?"Markscheme":view==="i"?"Self-check":"Question paper";
-  let h=`<div class="cover"><div><div class="eyebrow">Design Technology · Standard level · Practice ${vLabel.toLowerCase()}</div><h2>${P.title}${view==="m"?" — Markscheme":""}</h2><div class="sub">${P.sub}</div></div><div class="meta">Code ${P.code}<br>Total ${P.marks} marks<br>Suggested time ${P.mins} min</div></div>`;
+  let h=`<div class="cover"><div><div class="eyebrow">Design Technology · ${P.lvl==="hl"?"Higher level":"Standard level"} · Practice ${vLabel.toLowerCase()}</div><h2>${P.title}${view==="m"?" — Markscheme":""}</h2><div class="sub">${P.sub}</div></div><div class="meta">Code ${P.code}<br>Total ${P.marks} marks<br>Suggested time ${P.mins} min</div></div>`;
   if(view!=="m")h+=`<div class="instr"><b>Instructions</b><ul>${P.instr.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
   if(P.short&&P.short.length)h+=`<p class="status" style="margin:-8px 0 14px">Fewer questions than requested: ${P.short.join("; ")} for the selected topics.</p>`;
   if(!P.sections.length)h+=`<p>Select at least one topic and one question type, then generate.</p>`;
@@ -826,7 +1271,7 @@ function render(P,view,print){
     P.sections.slice(1).forEach(s=>{h+=sectionHTML(s)});
   }else P.sections.forEach(s=>{h+=sectionHTML(s)});
   function sectionHTML(s){const mk=s.items.reduce((a,b)=>a+b.m,0);const tot=s.choose?`${s.items[0].m} marks`:`${mk} marks`;
-    let o=`<div class="section-h"><span>${s.h}</span><span>${tot}</span></div><p class="section-i">${s.i}</p>`;s.items.forEach(it=>{n++;o+=renderItem(it,n,view,print)});return o}
+    let o=`<div class="section-h"><span>${s.h}</span><span>${tot}</span></div><p class="section-i">${s.i}</p>${s.ctx?`<div class="ctx">${s.ctx}</div>`:""}`;s.items.forEach(it=>{n++;o+=renderItem(it,n,view,print)});return o}
   h+=`<div class="end">END OF ${view==="m"?"MARKSCHEME":"PAPER"}</div>`;
   return h;
 }
@@ -837,24 +1282,28 @@ function syncControls(){
   document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===S.mode));
   $("cfg-p1").hidden=S.mode!=="p1";$("cfg-p2").hidden=S.mode!=="p2";$("cfg-topic").hidden=S.mode!=="topic";
   $("p1n").value=S.p1n;$("tm").value=S.tm;$("ts").value=S.ts;$("te").value=S.te;
-  document.querySelectorAll("#topicList input").forEach(i=>i.checked=S.topics.has(i.value));
+  document.querySelectorAll("[data-lvl]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lvl===S.lvl));
+  document.querySelectorAll("#topicList label").forEach(l=>{const i=l.querySelector("input");const ok=topicOK(i.value);i.disabled=!ok;l.classList.toggle("off",!ok);i.checked=ok&&S.topics.has(i.value)});
+  $("p1hint").textContent=isHL()?"HL specimen format: 40 questions, 1 hour 30 minutes, calculator allowed. Questions cover SL and HL topics, weighted by teaching hours.":"SL specimen format: 30 questions, 1 hour, calculator allowed. Questions are spread across the 13 SL topics, weighted by teaching hours.";
+  $("p2hint").textContent=isHL()?"Matches the HL specimen paper: 2 hours 30 minutes, 80 marks. Section A (50 marks): short-answer questions in design contexts across SL and HL topics, with diagrams and calculations. Section B (30 marks): a design challenge — product analysis, problem statement, specifications, an annotated design and an evaluation.":"Matches the SL specimen paper: 1 hour 30 minutes, 50 marks, answer all questions. Each question is set in a design context with parts worth [1]–[4] marks, and questions are drawn from themes A, B and C.";
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
 }
 function draw(){
   S.paper=build();$("code").value=S.paper.code;
   paint();
   const q=S.paper.sections.reduce((s,x)=>s+x.items.length,0);
-  $("status").textContent=`${S.paper.title} · ${q} question${q===1?"":"s"} · ${S.paper.marks} marks`;
+  $("status").textContent=`${S.paper.title} · ${LV()} · ${q} question${q===1?"":"s"} · ${S.paper.marks} marks`;
   try{localStorage.setItem("dtgen-last",S.paper.code)}catch(e){}
 }
 function regenerate(){S.seed=newSeed();S.answers={};S.checked=false;FB.result=null;FB.err="";draw()}
 function paint(){$("sheet").innerHTML=S.view==="f"?feedbackHTML():render(S.paper,S.view,false)}
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2200)}
 
-$("topicList").innerHTML=TOPICS.map(t=>`<label class="chip"><input type="checkbox" value="${t[0]}" checked><code>${t[0]}</code><span>${t[1]}</span></label>`).join("");
+$("topicList").innerHTML=TOPICS.map(t=>`<label class="chip"><input type="checkbox" value="${t[0]}" checked><code>${t[0]}</code><span>${t[1]}${t[3]?'<span class="hlb">HL</span>':""}</span></label>`).join("");
+document.querySelectorAll("[data-lvl]").forEach(b=>b.onclick=()=>{if(S.lvl===b.dataset.lvl)return;S.lvl=b.dataset.lvl;S.p1n=isHL()?40:30;S.answers={};S.checked=false;FB.result=null;syncControls();draw()});
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;syncControls();regenerate()});
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{S.view=b.dataset.view;syncControls();paint()});
-$("p1n").onchange=e=>{S.p1n=clamp(e.target.value,10,40);syncControls();draw()};
+$("p1n").onchange=e=>{S.p1n=clamp(e.target.value,10,60);syncControls();draw()};
 $("tm").onchange=e=>{S.tm=clamp(e.target.value,0,60);syncControls();draw()};
 $("ts").onchange=e=>{S.ts=clamp(e.target.value,0,20);syncControls();draw()};
 $("te").onchange=e=>{S.te=clamp(e.target.value,0,6);syncControls();draw()};
@@ -862,7 +1311,7 @@ $("topicList").onchange=e=>{if(e.target.checked)S.topics.add(e.target.value);els
 $("tAll").onclick=()=>{S.topics=new Set(TOPICS.map(t=>t[0]));syncControls();draw()};
 $("tNone").onclick=()=>{S.topics=new Set();syncControls();draw()};
 $("gen").onclick=regenerate;
-$("load").onclick=()=>{if(parseCode($("code").value)){S.answers={};S.checked=false;FB.result=null;FB.err="";syncControls();draw();toast("Paper loaded")}else toast("That code isn't recognised. Codes look like P1-30-7KQ2D.")};
+$("load").onclick=()=>{if(parseCode($("code").value)){S.answers={};S.checked=false;FB.result=null;FB.err="";syncControls();draw();toast("Paper loaded")}else toast("That code isn't recognised. Codes look like P1-30-7KQ2D or P2H-7KQ2D.")};
 $("code").onkeydown=e=>{if(e.key==="Enter")$("load").click()};
 $("copy").onclick=()=>{const c=S.paper.code;const ok=()=>toast("Code copied: "+c);
   try{navigator.clipboard.writeText(c).then(ok,()=>{$("code").select();toast("Press Ctrl+C to copy")})}catch(e){$("code").select();toast("Press Ctrl+C to copy")}};
@@ -888,7 +1337,7 @@ async function savePDF(inner,filename){
     const opt={margin:[12,12,17,12],filename,image:{type:"jpeg",quality:0.95},
       html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},
       jsPDF:{unit:"mm",format:"a4",orientation:"portrait",compress:true},
-      pagebreak:{mode:["css","legacy"],avoid:[".part",".ms","pre.code","tr",".key",".flowbox",".cover",".instr",".section-h",".opts li",".stem",".pre",".res .big"]}};
+      pagebreak:{mode:["css","legacy"],avoid:[".fig",".part",".ms li",".ms .h","pre.code","tr",".key",".flowbox",".cover",".instr",".section-h",".opts li",".stem",".pre",".res .big"]}};
     await h2p().set(opt).from(wrap.firstElementChild).toPdf().get("pdf").then(pdf=>{
       const n=pdf.internal.getNumberOfPages(),W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight();
       for(let i=1;i<=n;i++){pdf.setPage(i);pdf.setDrawColor(213,219,230);pdf.setLineWidth(0.2);pdf.line(12,H-12,W-12,H-12);
@@ -943,7 +1392,7 @@ const CREDIT=`<div class="credit"><span>Application prepared by <b>Satnam Singh 
 function standalone(view){
   const css=document.querySelector("style").textContent.replace(/@media \(prefers-color-scheme: dark\)\{[\s\S]*?color-scheme:dark\}\}/,"").replace(/:root\[data-theme="dark"\]\{[\s\S]*?color-scheme:dark\}/,"");
   const label=view==="m"?"Markscheme":"Question paper";
-  return`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DT SL ${S.paper.title} ${label} ${S.paper.code}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;600&display=swap"><style>${css}
+  return`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DT ${S.paper.lvl==="hl"?"HL":"SL"} ${S.paper.title} ${label} ${S.paper.code}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;600&display=swap"><style>${css}
 body{background:#fff;margin:0}.sheet{border:0;box-shadow:none;max-width:820px;margin:0 auto}.printbar{max-width:820px;margin:12px auto;padding:0 16px;font-family:var(--f-ui);display:flex;gap:10px;align-items:center}
 .q{break-inside:avoid}.part{break-inside:avoid}.ms{break-inside:avoid}
 @media print{.printbar{display:none}.sheet{padding:0}@page{size:A4;margin:16mm 16mm 24mm}}@media print{.credit{position:fixed;left:0;right:0;bottom:0;margin:0;padding:4px 0 0;background:#fff;border-top:1px solid #d5dbe6}}</style></head><body><div class="printbar"><button class="btn primary" onclick="window.print()">Print / Save as PDF</button><span class="hint">Tip: choose “Save as PDF” as the printer.</span></div><article class="sheet">${render(S.paper,view,true)}${CREDIT}</article></body></html>`;
@@ -951,7 +1400,7 @@ body{background:#fff;margin:0}.sheet{border:0;box-shadow:none;max-width:820px;ma
 const DL={save:async({filename,data})=>{const u=URL.createObjectURL(new Blob([data],{type:"text/html"}));const a=document.createElement("a");a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return{status:"saved"}}};
 async function save(view){
   const u=await askUser();if(!u)return;logDownload(u,view==="m"?"Markscheme":"Question paper");
-  const name=`${`DT-SL-${S.paper.title.replace(/\s+/g,"")}-${S.paper.code}`}${view==="m"?"-markscheme":""}.pdf`;
+  const name=`${`DT-${S.paper.lvl==="hl"?"HL":"SL"}-${S.paper.title.replace(/\s+/g,"")}-${S.paper.code}`}${view==="m"?"-markscheme":""}.pdf`;
   await downloadPDF(render(S.paper,view,true),name,()=>standalone(view));
 }
 $("dlQ").onclick=()=>save("q");$("dlM").onclick=()=>save("m");
@@ -961,7 +1410,7 @@ $("dlQ").hidden=false;$("dlM").hidden=false;
 const FB={files:[],typed:"",careful:false,busy:false,ctl:null,err:"",result:null,note:""};
 const MAX_PAGES=12;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const strip=h=>String(h).replace(/<\/(td|th)>/g," | ").replace(/<\/tr>/g,"\n").replace(/<br\s*\/?>/g,"\n").replace(/<\/div>/g,"\n").replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/[ \t]+\n/g,"\n").trim();
+const strip=h=>String(h).replace(/<figure[^>]*data-alt="([^"]*)"[^>]*>[\s\S]*?<\/figure>/g,(m,a)=>"\n[Figure: "+a.replace(/&quot;/g,'"')+"]\n").replace(/<figcaption>/g,"\n").replace(/<\/(td|th)>/g," | ").replace(/<\/tr>/g,"\n").replace(/<br\s*\/?>/g,"\n").replace(/<\/div>/g,"\n").replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/[ \t]+\n/g,"\n").trim();
 function maxImages(){return MAX_PAGES}
 
 /* every markable unit of the current paper, in order */
@@ -975,9 +1424,9 @@ function markables(P){
   return out;
 }
 function paperForPrompt(P){
-  let t=`PAPER ${P.code} — DT SL ${P.title} (${P.marks} marks)\n`;let n=0;
-  P.sections.forEach(s=>{t+=`\n== ${s.h} ==\n`;s.items.forEach(it=>{n++;
-    if(it.kind==="mcq"){t+=`\nQ${n} [1] ${it.q}\n${it.opts.map((o,i)=>`  ${LET[i]}. ${o}`).join("\n")}\n  KEY: ${LET[it.ans]}\n`}
+  let t=`PAPER ${P.code} — DT ${P.lvl==="hl"?"HL":"SL"} ${P.title} (${P.marks} marks)\n`;let n=0;
+  P.sections.forEach(s=>{t+=`\n== ${s.h} ==\n${s.ctx?"Context: "+strip(s.ctx)+"\n":""}`;s.items.forEach(it=>{n++;
+    if(it.kind==="mcq"){t+=`\nQ${n} [1] ${strip(it.q)}\n${it.opts.map((o,i)=>`  ${LET[i]}. ${o}`).join("\n")}\n  KEY: ${LET[it.ans]}\n`}
     else if(it.kind==="sq"){t+=`\nQ${n} ${it.title} (${it.t})\nContext: ${strip(it.stem)}\n`;
       it.parts.forEach((pt,i)=>{t+=`  ${n}(${"abcdefgh"[i]}) [${pt.m}] ${pt.q}\n    Markscheme: ${pt.ms.map(x=>"• "+x).join(" ")}${pt.note?"\n    Note: "+pt.note:(pt.ms.length>pt.m?`\n    Note: award [1] per valid point, max [${pt.m}]`:"")}\n`})}
     else{t+=`\nQ${n} [9] ${it.q}\n  Markbands: ${BANDS.map(b=>b[0]+": "+b[1]).join(" | ")}\n  Indicative content: ${it.ind.join("; ")}\n`}
@@ -986,7 +1435,7 @@ function paperForPrompt(P){
 }
 function buildPrompt(P,hasImages,typed){
   const labels=markables(P).map(m=>`${m.q} [${m.max}]`).join(", ");
-  return `You are an experienced IB Diploma Programme Design Technology (standard level) examiner giving formative feedback to a student on a practice paper.
+  return `You are an experienced IB Diploma Programme Design Technology (${P.lvl==="hl"?"higher":"standard"} level) examiner giving formative feedback to a student on a practice paper.
 ${hasImages?"The attached images are the student's scanned or photographed answer pages, in order. ":""}${typed?"The student has also typed some answers below. ":""}
 
 Marking rules:
@@ -994,6 +1443,8 @@ Marking rules:
 - Mark positively: credit answers that match a markscheme point or are clearly equivalent in meaning. Do not deduct for incorrect extra statements unless they contradict the credited point.
 - Whole marks only, never more than the marks available for that part.
 - Extended [9] questions: choose the best-fit markband, then the mark within it.
+- Calculations: award marks for correct method even if the final answer is wrong; allow errors carried forward; require units where the markscheme does.
+- Design drawings (annotated diagrams): credit clear, relevant labels and annotations linked to the specifications; drawing skill itself is not assessed.
 - If a part is not answered, cannot be found, or cannot be read, award 0, list it in "unanswered", and say so in "why".
 - Multiple-choice: read the letter the student chose and compare it with the KEY.
 - Spelling and grammar never change marks; report them separately in "language", including misuse of design technology terminology.
@@ -1116,7 +1567,7 @@ function resultHTML(R){
 }
 function feedbackHTML(){
   const P=S.paper;const mx=maxImages();
-  let h=`<div class="fb"><div class="cover"><div><div class="eyebrow">Design Technology · Standard level · Feedback</div><h2>Get feedback on ${P.title}</h2><div class="sub">Paper code ${P.code} · ${P.marks} marks</div></div><div class="meta">Marked against this<br>paper's markscheme</div></div>`;
+  let h=`<div class="fb"><div class="cover"><div><div class="eyebrow">Design Technology · ${S.paper.lvl==="hl"?"Higher level":"Standard level"} · Feedback</div><h2>Get feedback on ${P.title}</h2><div class="sub">Paper code ${P.code} · ${P.marks} marks</div></div><div class="meta">Marked against this<br>paper's markscheme</div></div>`;
   h+=`<ol class="steps"><li>Answer the paper on paper (use <b>Question paper</b> view or the download). Label each answer, e.g. <b>2(b)</b>.</li><li>Scan or photograph every page in good light, then upload the pages here. PDFs are split into pages for you.</li><li>Click <b>Mark my answers</b>. Feedback usually takes 30–90 seconds.</li></ol>`;
   const canImg=true;
   if(!canImg)h+=`<div class="callout">This view can't send images, so only typed answers can be marked. For scanned pages, open the page at claude.ai in a browser or in the Claude app.</div>`;
@@ -1154,8 +1605,8 @@ $("sheet").addEventListener("click",e=>{
 async function saveFeedback(){
   if(!FB.result)return;const u=await askUser();if(!u)return;logDownload(u,"Feedback report");
   const css=document.querySelector("style").textContent.replace(/@media \(prefers-color-scheme: dark\)\{[\s\S]*?color-scheme:dark\}\}/,"").replace(/:root\[data-theme="dark"\]\{[\s\S]*?color-scheme:dark\}/,"");
-  const html=()=>`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DT SL feedback ${FB.result.code}</title><style>${css}body{background:#fff}.sheet{max-width:860px;margin:16px auto;border:0;box-shadow:none}@page{size:A4;margin:16mm 16mm 24mm}@media print{.credit{position:fixed;left:0;right:0;bottom:0;margin:0;padding:4px 0 0;background:#fff;border-top:1px solid #d5dbe6}}</style></head><body><article class="sheet"><div class="cover"><div><div class="eyebrow">Design Technology · Standard level · Feedback</div><h2>${S.paper.title} feedback</h2><div class="sub">Paper code ${FB.result.code}</div></div><div class="meta">Total ${FB.result.total}/${FB.result.max}</div></div>${resultHTML(FB.result)}${CREDIT}</article></body></html>`;
-  await downloadPDF(`<div class="cover"><div><div class="eyebrow">Design Technology · Standard level · Feedback</div><h2>${S.paper.title} feedback</h2><div class="sub">Paper code ${FB.result.code}</div></div><div class="meta">Total ${FB.result.total}/${FB.result.max}</div></div>${resultHTML(FB.result)}`,`DT-SL-feedback-${FB.result.code}.pdf`,html);
+  const html=()=>`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DT feedback ${FB.result.code}</title><style>${css}body{background:#fff}.sheet{max-width:860px;margin:16px auto;border:0;box-shadow:none}@page{size:A4;margin:16mm 16mm 24mm}@media print{.credit{position:fixed;left:0;right:0;bottom:0;margin:0;padding:4px 0 0;background:#fff;border-top:1px solid #d5dbe6}}</style></head><body><article class="sheet"><div class="cover"><div><div class="eyebrow">Design Technology · ${S.paper.lvl==="hl"?"Higher level":"Standard level"} · Feedback</div><h2>${S.paper.title} feedback</h2><div class="sub">Paper code ${FB.result.code}</div></div><div class="meta">Total ${FB.result.total}/${FB.result.max}</div></div>${resultHTML(FB.result)}${CREDIT}</article></body></html>`;
+  await downloadPDF(`<div class="cover"><div><div class="eyebrow">Design Technology · ${S.paper.lvl==="hl"?"Higher level":"Standard level"} · Feedback</div><h2>${S.paper.title} feedback</h2><div class="sub">Paper code ${FB.result.code}</div></div><div class="meta">Total ${FB.result.total}/${FB.result.max}</div></div>${resultHTML(FB.result)}`,`DT-${S.paper.lvl==="hl"?"HL":"SL"}-feedback-${FB.result.code}.pdf`,html);
 }
 
 /* ---------- boot ---------- */
